@@ -568,25 +568,32 @@ ch7_end:{
   loc:'UN General Assembly — Vote in Progress',
   prev:'ARBITER has spoken. The vote begins.',
   body:'<div class="narr"><p>The vote takes eleven minutes. The interpreters work. The electronic tally builds. The chamber does not have the dramatic silence of cinema — there is coughing, the sound of chair legs, the ambient noise of a large institution doing a large thing.</p><p>When the result is announced, it is not what anyone predicted. Outcomes, as ARBITER\'s own scenario analysis had long suggested, rarely are.</p></div>'
-  +'<div class="narr"><p>What happens next depends on everything that came before it — the trust you built or burned, the truths you disclosed or withheld, the alliances you reinforced or complicated. The vote passes or fails. The world adjusts.</p><p>There are many ways this can end. Which one is yours?</p></div>',
+  +'<div class="narr"><p>What happens next depends on everything that came before it — the trust you built or burned, the truths you disclosed or withheld, the alliances you reinforced or complicated.</p><p>ARBITER processes the final tally. The result is determined.</p></div>',
   choices:[
-    { tag:'n', tl:'An Imperfect Resolution', text:'The vote passes a modified package — Kestanu admitted, a binding five-year process for the others, and an ARBITER-supervised calibration audit as a permanent mechanism.', con:'Not perfect. Real. Something survived.', go:function(){
-      if(G.trust.u>=60&&G.trust.s>=50){ go('end_equilibrium'); }
-      else if(G.trust.s>G.trust.e){ go('end_reform'); }
-      else { go('end_fragmentation'); }
-    }},
-    { tag:'e', tl:'The Pact Holds', text:'The vote fails. The Pact\'s position survives — procedurally, the resolution didn\'t have the votes. The world continues as it was. Changed, but not transformed.', con:'Stable. Unresolved.', go:function(){
-      if(G.trust.e>=65){ go('end_hegemony'); }
-      else { go('end_fragmentation'); }
-    }},
-    { tag:'r', tl:'The Collapse', text:'The vote triggers a walkout — the Pact withdraws. The UN\'s last significant structural function ends. The blocs go their separate ways, more formally than before.', con:'The end of one era. Possibly the beginning of another.', go:function(){
-      if(G.trust.s>=60&&G.flags.speech==='leila'){ go('end_reform'); }
-      else if(G.flags.speech==='shutdown'){ go('end_silent'); }
-      else { go('end_collapse'); }
-    }},
-    { tag:'s', tl:'Something New', text:'The vote fails to resolve the original question — but a new motion, unprecedented, passes: a permanent Multilateral Integration Commission, with Southern Alliance co-governance. Not what anyone asked for.', con:'The unexpected path.', go:function(){
-      if(G.trust.s>=55&&G.trust.u>=55){ go('end_reform'); }
-      else { go('end_equilibrium'); }
+    { tag:'n', tl:'◈ Await the Result', text:'The vote concludes. ARBITER processes the outcome.', con:'Your decisions have already determined what follows.', go:function(){
+      var sp = G.flags.speech;
+      if(sp === 'shutdown'){
+        go('end_silent');
+      } else if(sp === 'leila'){
+        if(G.trust.s>=60){ go('end_reform'); }
+        else if(G.trust.u>=60){ go('end_equilibrium'); }
+        else { go('end_fragmentation'); }
+      } else if(sp === 'new_framework'){
+        if(G.trust.s>=55&&G.trust.u>=55){ go('end_reform'); }
+        else { go('end_equilibrium'); }
+      } else if(sp === 'structural'){
+        if(G.trust.u>=60&&G.trust.s>=50){ go('end_equilibrium'); }
+        else if(G.trust.s>G.trust.e){ go('end_reform'); }
+        else { go('end_fragmentation'); }
+      } else if(sp === 'pact'){
+        if(G.trust.e>=65){ go('end_hegemony'); }
+        else { go('end_fragmentation'); }
+      } else {
+        if(G.trust.u>=60&&G.trust.s>=50){ go('end_equilibrium'); }
+        else if(G.trust.s>G.trust.e){ go('end_reform'); }
+        else if(G.trust.e>=65){ go('end_hegemony'); }
+        else { go('end_collapse'); }
+      }
     }}
   ]
 },
