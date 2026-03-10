@@ -4,581 +4,660 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DISORDER — A Civilizational Decision Game</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #080c14;
-    --bg2: #0d1420;
-    --bg3: #111a2c;
-    --panel: #0e1828;
-    --border: #1e2f48;
-    --border-bright: #2e4a70;
-    --text: #c8d8ec;
-    --text-dim: #5a7a9a;
-    --text-muted: #3a5070;
-    --amber: #d4922a;
-    --amber-bright: #f0b040;
-    --amber-dim: #7a4a10;
-    --red: #c0392b;
-    --green: #27ae60;
-    --white: #e8f0f8;
-    --faction-east: #c0a050;
-    --faction-south: #60b860;
-    --faction-atlantic: #5090d0;
-    --faction-un: #9070c0;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
-    pointer-events: none; z-index: 9998;
-  }
-  #game-container {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 20px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  .game-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 8px;
-  }
-  .game-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 0.3em;
-    color: var(--amber);
-    text-transform: uppercase;
-  }
-  .status-bar {
-    display: flex;
-    gap: 20px;
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-  }
-  .status-item span { color: var(--amber-bright); }
-  .trust-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 8px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 20px;
-  }
-  .trust-item { display: flex; flex-direction: column; gap: 4px; }
-  .trust-label { font-size: 0.58rem; letter-spacing: 0.08em; color: var(--text-dim); text-transform: uppercase; }
-  .trust-bar-bg { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .trust-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
-  .trust-val { font-size: 0.6rem; color: var(--text-muted); }
-  .scene { flex: 1; display: flex; flex-direction: column; gap: 0; animation: fadeIn 0.6s ease; }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .chapter-label { font-size: 0.6rem; letter-spacing: 0.25em; color: var(--amber-dim); text-transform: uppercase; padding: 0 0 8px 0; }
-  .scene-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 900; color: var(--white); line-height: 1.2; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-  .location-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 0.6rem; letter-spacing: 0.15em; color: var(--text-dim); padding: 4px 10px; border: 1px solid var(--border); background: var(--bg3); margin-bottom: 16px; text-transform: uppercase; }
-  .location-tag::before { content: '◈'; color: var(--amber-dim); font-size: 0.7rem; }
-  .narrative { font-family: 'EB Garamond', serif; font-size: 1.05rem; line-height: 1.85; color: var(--text); padding: 0 0 24px 0; }
-  .narrative p { margin-bottom: 1em; }
-  .narrative em { color: var(--amber-bright); font-style: italic; }
-  .narrative strong { color: var(--white); font-weight: 600; }
-  .intel-block { background: var(--bg3); border: 1px solid var(--border); border-left: 3px solid var(--amber-dim); padding: 14px 18px; margin: 16px 0; font-size: 0.78rem; line-height: 1.7; color: var(--text-dim); }
-  .intel-block .intel-header { font-size: 0.58rem; letter-spacing: 0.2em; color: var(--amber); text-transform: uppercase; margin-bottom: 8px; }
-  .faction-quote { padding: 16px 20px; margin: 16px 0; border: 1px solid var(--border); background: var(--panel); position: relative; }
-  .faction-quote::before { content: '"'; position: absolute; top: -8px; left: 12px; font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--amber-dim); line-height: 1; }
-  .faction-quote .quote-text { font-family: 'EB Garamond', serif; font-size: 0.98rem; font-style: italic; color: var(--text); line-height: 1.7; padding-left: 8px; }
-  .faction-quote .quote-attr { font-size: 0.6rem; letter-spacing: 0.15em; color: var(--text-dim); margin-top: 10px; text-transform: uppercase; padding-left: 8px; }
-  .faction-east .quote-attr { color: var(--faction-east); }
-  .faction-south .quote-attr { color: var(--faction-south); }
-  .faction-atlantic .quote-attr { color: var(--faction-atlantic); }
-  .faction-un .quote-attr { color: var(--faction-un); }
-  .choices-section { margin-top: 28px; }
-  .choices-header { font-size: 0.58rem; letter-spacing: 0.25em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-  .choices-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .choice-btn { display: block; width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 16px 20px; margin-bottom: 10px; cursor: pointer; text-align: left; transition: all 0.2s ease; position: relative; overflow: hidden; font-family: 'EB Garamond', serif; font-size: 0.98rem; line-height: 1.5; }
-  .choice-btn::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border-bright); transition: all 0.2s ease; }
-  .choice-btn:hover { background: var(--bg3); border-color: var(--border-bright); color: var(--white); transform: translateX(3px); }
-  .choice-btn:hover::before { background: var(--amber); width: 4px; }
-  .choice-btn .choice-tag { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; letter-spacing: 0.15em; padding: 2px 6px; margin-bottom: 6px; text-transform: uppercase; border: 1px solid; }
-  .tag-east { color: var(--faction-east); border-color: var(--faction-east); background: rgba(192,160,80,0.08); }
-  .tag-south { color: var(--faction-south); border-color: var(--faction-south); background: rgba(96,184,96,0.08); }
-  .tag-atlantic { color: var(--faction-atlantic); border-color: var(--faction-atlantic); background: rgba(80,144,208,0.08); }
-  .tag-neutral { color: var(--faction-un); border-color: var(--faction-un); background: rgba(144,112,192,0.08); }
-  .tag-risk { color: var(--red); border-color: var(--red); background: rgba(192,57,43,0.08); }
-  .choice-btn .choice-consequence { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--text-muted); margin-top: 6px; }
-  .ending-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; animation: fadeIn 1s ease; }
-  .ending-type { font-size: 0.65rem; letter-spacing: 0.4em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 16px; }
-  .ending-title { font-family: 'Playfair Display', serif; font-size: 2.6rem; font-weight: 900; line-height: 1.15; margin-bottom: 24px; }
-  .ending-divider { width: 80px; height: 1px; background: var(--amber-dim); margin: 0 auto 28px; }
-  .ending-narrative { font-family: 'EB Garamond', serif; font-size: 1.05rem; line-height: 1.85; color: var(--text); max-width: 620px; margin: 0 auto 32px; text-align: left; }
-  .ending-narrative p { margin-bottom: 1em; }
-  .ending-narrative em { color: var(--amber-bright); font-style: italic; }
-  .ending-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto 24px; }
-  .ending-stat { padding: 12px; border: 1px solid var(--border); background: var(--panel); }
-  .ending-stat .stat-label { font-size: 0.55rem; letter-spacing: 0.15em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-  .ending-stat .stat-val { font-size: 1.3rem; font-weight: 700; }
-  .restart-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; padding: 14px 32px; border: 1px solid var(--amber-dim); background: transparent; color: var(--amber); cursor: pointer; transition: all 0.2s ease; }
-  .restart-btn:hover { background: var(--amber-dim); color: var(--white); border-color: var(--amber); }
-  .title-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 20px 40px; }
-  .title-eyebrow { font-size: 0.62rem; letter-spacing: 0.5em; color: var(--amber-dim); text-transform: uppercase; margin-bottom: 20px; }
-  .main-title { font-family: 'Playfair Display', serif; font-size: 5rem; font-weight: 900; color: var(--white); letter-spacing: -0.02em; line-height: 1; margin-bottom: 8px; }
-  .title-subtitle { font-family: 'EB Garamond', serif; font-size: 1.05rem; color: var(--text-dim); font-style: italic; margin-bottom: 40px; }
-  .title-divider { width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--amber-dim), transparent); margin: 0 auto 40px; }
-  .title-intro { font-family: 'EB Garamond', serif; font-size: 1rem; line-height: 1.8; color: var(--text-dim); max-width: 560px; margin-bottom: 40px; }
-  .faction-badges { display: flex; gap: 16px; justify-content: center; margin-bottom: 48px; flex-wrap: wrap; }
-  .faction-badge { padding: 8px 16px; border: 1px solid; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; }
-  .badge-east { border-color: var(--faction-east); color: var(--faction-east); }
-  .badge-south { border-color: var(--faction-south); color: var(--faction-south); }
-  .badge-atlantic { border-color: var(--faction-atlantic); color: var(--faction-atlantic); }
-  .badge-un { border-color: var(--faction-un); color: var(--faction-un); }
-  .start-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; letter-spacing: 0.25em; text-transform: uppercase; padding: 16px 48px; border: 1px solid var(--amber); background: transparent; color: var(--amber-bright); cursor: pointer; transition: all 0.3s ease; }
-  .start-btn:hover { background: var(--amber-dim); color: var(--white); }
-  .blink { animation: blink 1.4s step-end infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-  .progress-track { display: flex; gap: 4px; padding: 12px 0; margin-bottom: 8px; }
-  .prog-dot { width: 20px; height: 3px; background: var(--border); transition: background 0.4s ease; }
-  .prog-dot.active { background: var(--amber); }
-  .prog-dot.done { background: var(--amber-dim); }
-  .consequence-flash { padding: 12px 16px; border: 1px solid var(--border); background: var(--bg3); font-size: 0.72rem; color: var(--text-dim); margin-bottom: 16px; animation: fadeIn 0.4s ease; }
-  .consequence-flash .cf-icon { color: var(--amber); margin-right: 6px; }
-  .ending-collapse .ending-title { color: #c0392b; }
-  .ending-hegemony .ending-title { color: var(--faction-east); }
-  .ending-fragmentation .ending-title { color: var(--text-dim); }
-  .ending-equilibrium .ending-title { color: var(--faction-un); }
-  .scroll-hint { font-size: 0.6rem; letter-spacing: 0.2em; color: var(--text-muted); text-align: center; padding-top: 8px; animation: pulse 2s ease infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-  .ending-meta { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 24px; letter-spacing: 0.1em; }
-  .ending-meta span { color: var(--amber-bright); }
+:root {
+  --bg:#070b12; --bg2:#0c1220; --bg3:#101828; --panel:#0d1725;
+  --border:#1c2d45; --border-hi:#2a4468;
+  --text:#bdd0e8; --text-dim:#527090; --text-muted:#304860;
+  --amber:#cc8a22; --amber-hi:#eeaa38; --amber-lo:#6e400c;
+  --red:#b83428; --red-lo:#5a1810;
+  --white:#dceaf8;
+  --east:#b89840; --south:#50a850; --atl:#4080c0; --un:#7860a8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.022) 2px,rgba(0,0,0,.022) 4px);pointer-events:none;z-index:9998;}
+
+/* ── LAYOUT ─────────────────── */
+#wrap{max-width:900px;margin:0 auto;padding:20px;min-height:100vh;display:flex;flex-direction:column;}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:6px;}
+.hdr-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;letter-spacing:.35em;color:var(--amber);text-transform:uppercase;}
+.hdr-status{display:flex;gap:18px;font-size:.62rem;color:var(--text-dim);letter-spacing:.1em;}
+.hdr-status span{color:var(--amber-hi);}
+
+/* ── TRUST BARS ─────────────── */
+#trust-panel{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.ti{display:flex;flex-direction:column;gap:3px;}
+.ti-lbl{font-size:.55rem;letter-spacing:.08em;color:var(--text-dim);text-transform:uppercase;}
+.ti-bg{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.ti-fill{height:100%;border-radius:2px;transition:width .7s ease;}
+.ti-val{font-size:.58rem;color:var(--text-muted);}
+
+/* ── PROGRESS ───────────────── */
+.prog-track{display:flex;gap:3px;padding:10px 0 6px;}
+.pd{flex:1;height:3px;background:var(--border);transition:background .4s;}
+.pd.done{background:var(--amber-lo);}
+.pd.active{background:var(--amber);}
+
+/* ── SCENE ──────────────────── */
+.scene{flex:1;display:flex;flex-direction:column;animation:fadeUp .55s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+.ch-lbl{font-size:.58rem;letter-spacing:.28em;color:var(--amber-lo);text-transform:uppercase;padding-bottom:7px;}
+.sc-title{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:900;color:var(--white);line-height:1.2;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.loc{display:inline-flex;align-items:center;gap:5px;font-size:.58rem;letter-spacing:.14em;color:var(--text-dim);padding:3px 9px;border:1px solid var(--border);background:var(--bg3);margin-bottom:14px;text-transform:uppercase;}
+.loc::before{content:'◈';color:var(--amber-lo);}
+.prev-con{padding:10px 14px;border:1px solid var(--border);background:var(--bg3);font-size:.68rem;color:var(--text-dim);margin-bottom:14px;animation:fadeUp .4s ease;}
+.prev-con .icon{color:var(--amber);margin-right:5px;}
+
+/* ── NARRATIVE ──────────────── */
+.narr{font-family:'EB Garamond',serif;font-size:1.04rem;line-height:1.88;color:var(--text);padding:0 0 20px;}
+.narr p{margin-bottom:.9em;}
+.narr em{color:var(--amber-hi);font-style:italic;}
+.narr strong{color:var(--white);font-weight:600;}
+
+/* ── INTEL BLOCK ────────────── */
+.intel{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--amber-lo);padding:13px 16px;margin:14px 0;font-size:.76rem;line-height:1.72;color:var(--text-dim);}
+.intel .ih{font-size:.56rem;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:7px;}
+.intel.s{border-left-color:var(--south);}  .intel.s .ih{color:var(--south);}
+.intel.a{border-left-color:var(--atl);}   .intel.a .ih{color:var(--atl);}
+.intel.e{border-left-color:var(--east);}  .intel.e .ih{color:var(--east);}
+.intel.u{border-left-color:var(--un);}    .intel.u .ih{color:var(--un);}
+
+/* ── FACTION QUOTE ──────────── */
+.fq{padding:14px 18px;margin:14px 0;border:1px solid var(--border);background:var(--panel);position:relative;}
+.fq::before{content:'"';position:absolute;top:-9px;left:10px;font-family:'Playfair Display',serif;font-size:2.6rem;color:var(--amber-lo);line-height:1;}
+.fq .qt{font-family:'EB Garamond',serif;font-size:.97rem;font-style:italic;color:var(--text);line-height:1.72;padding-left:7px;}
+.fq .qa{font-size:.58rem;letter-spacing:.13em;color:var(--text-dim);margin-top:9px;text-transform:uppercase;padding-left:7px;}
+.fq.fe .qa{color:var(--east);}  .fq.fs .qa{color:var(--south);}
+.fq.fa .qa{color:var(--atl);}   .fq.fu .qa{color:var(--un);}
+
+/* ── CHOICES ────────────────── */
+.choices{margin-top:24px;}
+.choices-hdr{font-size:.56rem;letter-spacing:.24em;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.choices-hdr::after{content:'';flex:1;height:1px;background:var(--border);}
+.cbtn{display:block;width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:14px 18px;margin-bottom:9px;cursor:pointer;text-align:left;transition:all .2s ease;position:relative;overflow:hidden;font-family:'EB Garamond',serif;font-size:.97rem;line-height:1.5;}
+.cbtn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border-hi);transition:all .2s;}
+.cbtn:hover{background:var(--bg3);border-color:var(--border-hi);color:var(--white);transform:translateX(2px);}
+.cbtn:hover::before{background:var(--amber);width:4px;}
+.ctag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.53rem;letter-spacing:.14em;padding:2px 5px;margin-bottom:5px;text-transform:uppercase;border:1px solid;}
+.t-e{color:var(--east);border-color:var(--east);background:rgba(184,152,64,.07);}
+.t-s{color:var(--south);border-color:var(--south);background:rgba(80,168,80,.07);}
+.t-a{color:var(--atl);border-color:var(--atl);background:rgba(64,128,192,.07);}
+.t-n{color:var(--un);border-color:var(--un);background:rgba(120,96,168,.07);}
+.t-r{color:var(--red);border-color:var(--red);background:rgba(184,52,40,.07);}
+.ccon{display:block;font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--text-muted);margin-top:5px;}
+
+.scroll-hint{font-size:.58rem;letter-spacing:.18em;color:var(--text-muted);text-align:center;padding-top:6px;animation:pulse 2.2s ease infinite;}
+@keyframes pulse{0%,100%{opacity:.35;}50%{opacity:.9;}}
+
+/* ── TITLE SCREEN ───────────── */
+.title-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:50px 20px 30px;}
+.t-eye{font-size:.6rem;letter-spacing:.5em;color:var(--amber-lo);text-transform:uppercase;margin-bottom:18px;}
+.t-main{font-family:'Playfair Display',serif;font-size:5.5rem;font-weight:900;color:var(--white);letter-spacing:-.02em;line-height:1;margin-bottom:6px;text-shadow:0 0 80px rgba(200,160,60,.12);}
+.t-sub{font-family:'EB Garamond',serif;font-size:1.05rem;color:var(--text-dim);font-style:italic;margin-bottom:38px;}
+.t-div{width:110px;height:1px;background:linear-gradient(90deg,transparent,var(--amber-lo),transparent);margin:0 auto 38px;}
+.t-intro{font-family:'EB Garamond',serif;font-size:.98rem;line-height:1.82;color:var(--text-dim);max-width:540px;margin-bottom:36px;}
+.t-badges{display:flex;gap:14px;justify-content:center;margin-bottom:44px;flex-wrap:wrap;}
+.t-badge{padding:7px 15px;border:1px solid;font-size:.58rem;letter-spacing:.13em;text-transform:uppercase;}
+.be{border-color:var(--east);color:var(--east);} .bs{border-color:var(--south);color:var(--south);}
+.ba{border-color:var(--atl);color:var(--atl);}   .bu{border-color:var(--un);color:var(--un);}
+.t-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.btn-primary{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;padding:14px 44px;border:1px solid var(--amber);background:transparent;color:var(--amber-hi);cursor:pointer;transition:all .28s;}
+.btn-primary:hover{background:var(--amber-lo);color:var(--white);}
+.btn-secondary{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;padding:14px 28px;border:1px solid var(--border-hi);background:transparent;color:var(--text-dim);cursor:pointer;transition:all .28s;}
+.btn-secondary:hover{border-color:var(--amber-lo);color:var(--text);}
+.blink{animation:blink 1.4s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+
+/* ── WORLD BRIEFING ─────────── */
+.briefing-screen{flex:1;padding:0 0 40px;animation:fadeUp .6s ease;}
+.brief-hdr{text-align:center;padding:40px 0 30px;border-bottom:1px solid var(--border);margin-bottom:30px;}
+.brief-eye{font-size:.6rem;letter-spacing:.4em;color:var(--amber-lo);text-transform:uppercase;margin-bottom:14px;}
+.brief-title{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:var(--white);margin-bottom:10px;}
+.brief-sub{font-family:'EB Garamond',serif;font-size:1rem;color:var(--text-dim);font-style:italic;}
+.brief-section{margin-bottom:36px;}
+.brief-section-title{font-size:.62rem;letter-spacing:.3em;color:var(--amber);text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.brief-section-title::before{content:'';width:8px;height:8px;border:1px solid var(--amber);transform:rotate(45deg);display:inline-block;flex-shrink:0;}
+.brief-body{font-family:'EB Garamond',serif;font-size:1rem;line-height:1.85;color:var(--text);}
+.brief-body p{margin-bottom:.9em;}
+.brief-body em{color:var(--amber-hi);font-style:italic;}
+.brief-body strong{color:var(--white);}
+.faction-card{border:1px solid var(--border);background:var(--panel);padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden;}
+.faction-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.fc-east::before{background:var(--east);}  .fc-south::before{background:var(--south);}
+.fc-atl::before{background:var(--atl);}    .fc-un::before{background:var(--un);}
+.fc-name{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;}
+.fc-east .fc-name{color:var(--east);}  .fc-south .fc-name{color:var(--south);}
+.fc-atl .fc-name{color:var(--atl);}    .fc-un .fc-name{color:var(--un);}
+.fc-desc{font-family:'EB Garamond',serif;font-size:.97rem;line-height:1.78;color:var(--text-dim);}
+.fc-desc strong{color:var(--text);}
+.fc-tags{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;}
+.fc-tag{font-size:.54rem;letter-spacing:.1em;padding:2px 7px;border:1px solid var(--border);color:var(--text-muted);text-transform:uppercase;}
+.timeline-item{display:flex;gap:16px;margin-bottom:14px;align-items:flex-start;}
+.tl-year{font-size:.6rem;letter-spacing:.1em;color:var(--amber);white-space:nowrap;padding-top:2px;min-width:42px;}
+.tl-dot{width:8px;height:8px;border:1px solid var(--amber-lo);transform:rotate(45deg);margin-top:4px;flex-shrink:0;}
+.tl-text{font-family:'EB Garamond',serif;font-size:.95rem;line-height:1.7;color:var(--text-dim);}
+.brief-footer{text-align:center;padding-top:24px;border-top:1px solid var(--border);}
+.arbiter-card{background:var(--bg3);border:1px solid var(--border);padding:20px 24px;margin-bottom:28px;text-align:left;}
+.ac-title{font-size:.6rem;letter-spacing:.25em;color:var(--un);text-transform:uppercase;margin-bottom:10px;}
+.ac-body{font-family:'EB Garamond',serif;font-size:.97rem;line-height:1.8;color:var(--text-dim);}
+.ac-body strong{color:var(--text);}
+
+/* ── ENDING ─────────────────── */
+.ending-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;animation:fadeUp .9s ease;}
+.end-type{font-size:.62rem;letter-spacing:.4em;color:var(--text-muted);text-transform:uppercase;margin-bottom:14px;}
+.end-title{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:900;line-height:1.15;margin-bottom:22px;}
+.end-div{width:70px;height:1px;background:var(--amber-lo);margin:0 auto 26px;}
+.end-narr{font-family:'EB Garamond',serif;font-size:1.02rem;line-height:1.88;color:var(--text);max-width:620px;margin:0 auto 30px;text-align:left;}
+.end-narr p{margin-bottom:.9em;}
+.end-narr em{color:var(--amber-hi);font-style:italic;}
+.end-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:500px;margin:0 auto 20px;}
+.es{padding:11px;border:1px solid var(--border);background:var(--panel);}
+.es-lbl{font-size:.52rem;letter-spacing:.12em;color:var(--text-muted);text-transform:uppercase;margin-bottom:5px;}
+.es-val{font-size:1.28rem;font-weight:700;}
+.end-meta{font-size:.62rem;color:var(--text-muted);margin-bottom:22px;letter-spacing:.1em;}
+.end-meta span{color:var(--amber-hi);}
+.restart-btn{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;padding:13px 30px;border:1px solid var(--amber-lo);background:transparent;color:var(--amber);cursor:pointer;transition:all .2s;}
+.restart-btn:hover{background:var(--amber-lo);color:var(--white);}
+.end-eq .end-title{color:var(--un);}
+.end-frag .end-title{color:var(--text-dim);}
+.end-heg .end-title{color:var(--east);}
+.end-coll .end-title{color:var(--red);}
+.end-reform .end-title{color:var(--south);}
+.end-silent .end-title{color:#8090a0;}
 </style>
 </head>
 <body>
-<div id="game-container">
-  <div class="game-header">
-    <div class="game-title">DISORDER</div>
-    <div class="status-bar">
-      <div class="status-item">NODE <span id="node-id">—</span></div>
-      <div class="status-item">YEAR <span>2061</span></div>
-      <div class="status-item">SYSTEM <span id="sys-status">STANDBY</span></div>
+<div id="wrap">
+  <div class="hdr">
+    <div class="hdr-title">DISORDER</div>
+    <div class="hdr-status">
+      <div>NODE <span id="h-node">—</span></div>
+      <div>YEAR <span>2061</span></div>
+      <div>SYS <span id="h-sys">STANDBY</span></div>
     </div>
   </div>
-  <div class="trust-panel" id="trust-panel" style="display:none">
-    <div class="trust-item">
-      <div class="trust-label">East Asia Pact</div>
-      <div class="trust-bar-bg"><div class="trust-bar-fill" id="bar-east" style="width:50%; background: var(--faction-east)"></div></div>
-      <div class="trust-val" id="val-east">50</div>
-    </div>
-    <div class="trust-item">
-      <div class="trust-label">Southern Alliance</div>
-      <div class="trust-bar-bg"><div class="trust-bar-fill" id="bar-south" style="width:50%; background: var(--faction-south)"></div></div>
-      <div class="trust-val" id="val-south">50</div>
-    </div>
-    <div class="trust-item">
-      <div class="trust-label">Atlantic System</div>
-      <div class="trust-bar-bg"><div class="trust-bar-fill" id="bar-atlantic" style="width:50%; background: var(--faction-atlantic)"></div></div>
-      <div class="trust-val" id="val-atlantic">50</div>
-    </div>
-    <div class="trust-item">
-      <div class="trust-label">UN Authority</div>
-      <div class="trust-bar-bg"><div class="trust-bar-fill" id="bar-un" style="width:50%; background: var(--faction-un)"></div></div>
-      <div class="trust-val" id="val-un">50</div>
-    </div>
+  <div id="trust-panel" style="display:none">
+    <div class="ti"><div class="ti-lbl">East Asia Pact</div><div class="ti-bg"><div class="ti-fill" id="bf-e" style="width:50%;background:var(--east)"></div></div><div class="ti-val" id="bv-e">50</div></div>
+    <div class="ti"><div class="ti-lbl">Southern Alliance</div><div class="ti-bg"><div class="ti-fill" id="bf-s" style="width:50%;background:var(--south)"></div></div><div class="ti-val" id="bv-s">50</div></div>
+    <div class="ti"><div class="ti-lbl">Atlantic System</div><div class="ti-bg"><div class="ti-fill" id="bf-a" style="width:50%;background:var(--atl)"></div></div><div class="ti-val" id="bv-a">50</div></div>
+    <div class="ti"><div class="ti-lbl">UN Authority</div><div class="ti-bg"><div class="ti-fill" id="bf-u" style="width:50%;background:var(--un)"></div></div><div class="ti-val" id="bv-u">50</div></div>
   </div>
-  <div id="main-content"></div>
+  <div id="main"></div>
 </div>
 
 <script>
-var state = { trust: {east:50,south:50,atlantic:50,un:50}, chapter:0, flags:{}, history:[] };
+// ═══════════════════ STATE ════════════════
+var G = { trust:{e:50,s:50,a:50,u:50}, ch:0, flags:{}, hist:[] };
+function adj(e,s,a,u){ ['e','s','a','u'].forEach(function(k,i){ var d=[e,s,a,u][i]||0; G.trust[k]=Math.max(0,Math.min(100,G.trust[k]+d)); }); updateUI(); }
+function updateUI(){ ['e','s','a','u'].forEach(function(k){ document.getElementById('bf-'+k).style.width=G.trust[k]+'%'; document.getElementById('bv-'+k).textContent=G.trust[k]; }); }
+function flag(k,v){ G.flags[k]=v; }
+function gf(k){ return G.flags[k]; }
 
-function adjustTrust(e,s,a,u) {
-  state.trust.east = Math.max(0,Math.min(100,state.trust.east+(e||0)));
-  state.trust.south = Math.max(0,Math.min(100,state.trust.south+(s||0)));
-  state.trust.atlantic = Math.max(0,Math.min(100,state.trust.atlantic+(a||0)));
-  state.trust.un = Math.max(0,Math.min(100,state.trust.un+(u||0)));
-  updateTrustUI();
+function go(id){
+  G.hist.push(id); G.ch=Math.min(G.ch+1,8);
+  document.getElementById('h-node').textContent=id.toUpperCase().replace(/_/g,' ');
+  document.getElementById('h-sys').textContent='ACTIVE';
+  paint(id); window.scrollTo({top:0,behavior:'smooth'});
 }
-function updateTrustUI() {
-  ['east','south','atlantic','un'].forEach(function(f){
-    document.getElementById('bar-'+f).style.width = state.trust[f]+'%';
-    document.getElementById('val-'+f).textContent = state.trust[f];
+
+// ═══════════════════ CHAPTERS ════════════
+var CHAPS=['Prologue','Chapter I','Chapter II','Chapter III','Chapter IV','Chapter V','Chapter VI','Chapter VII'];
+
+function dots(ch){
+  var idx=CHAPS.findIndex(function(c){ return ch&&ch.indexOf(c)===0; });
+  if(idx<0) idx=0;
+  return CHAPS.map(function(_,i){ var c=i<idx?'done':i===idx?'active':''; return '<div class="pd '+c+'"></div>'; }).join('');
+}
+
+function paint(id){
+  var N=NODES[id]; if(!N) return;
+  var el=document.getElementById('main');
+  var tp=document.getElementById('trust-panel');
+  if(N.type==='title'){ tp.style.display='none'; el.innerHTML=renderTitle(); return; }
+  if(N.type==='briefing'){ tp.style.display='none'; el.innerHTML=renderBriefing(); return; }
+  if(N.type==='ending'){ tp.style.display='none'; el.innerHTML=renderEnding(N); return; }
+  tp.style.display='grid';
+  var prev=N.prev?'<div class="prev-con"><span class="icon">▸</span>'+N.prev+'</div>':'';
+  var ch='<div class="choices"><div class="choices-hdr">Directive Input Required</div>';
+  (N.choices||[]).forEach(function(c,i){
+    ch+='<button class="cbtn" onclick="choose('+i+',\''+id+'\')">'
+      +'<span class="ctag t-'+c.tag+'">'+c.tl+'</span><br>'+c.text
+      +'<span class="ccon">↳ '+c.con+'</span></button>';
   });
-}
-function setFlag(k,v){ state.flags[k]=v; }
-function goto(nodeId){
-  state.history.push(nodeId);
-  state.chapter = Math.min(state.chapter+1,5);
-  document.getElementById('node-id').textContent = nodeId.toUpperCase().replace(/_/g,' ');
-  document.getElementById('sys-status').textContent = 'ACTIVE';
-  renderNode(nodeId);
-  window.scrollTo({top:0,behavior:'smooth'});
+  ch+='</div>';
+  el.innerHTML='<div class="scene"><div class="prog-track">'+dots(N.ch)+'</div>'
+    +prev+'<div class="ch-lbl">'+(N.ch||'')+'</div>'
+    +'<div class="sc-title">'+N.title+'</div>'
+    +(N.loc?'<div class="loc">'+N.loc+'</div>':'')
+    +( N.bodyFn ? N.bodyFn() : N.body )+ch+'<div class="scroll-hint">scroll to read ↓</div></div>';
 }
 
-var CHAPTERS = ['Prologue','Chapter I','Chapter II','Chapter III','Chapter IV'];
-
-function renderNode(nodeId) {
-  var node = NODES[nodeId];
-  if(!node) return;
-  var content = document.getElementById('main-content');
-  var trustPanel = document.getElementById('trust-panel');
-  if(node.type==='title'){ trustPanel.style.display='none'; content.innerHTML=renderTitle(); return; }
-  if(node.type==='ending'){ trustPanel.style.display='none'; content.innerHTML=renderEnding(node); return; }
-  trustPanel.style.display='grid';
-  var chapterIndex = CHAPTERS.findIndex(function(c){ return node.chapter && node.chapter.indexOf(c)===0; });
-  if(chapterIndex<0) chapterIndex=0;
-  var dots = CHAPTERS.map(function(c,i){
-    var cls = i<chapterIndex?'done':i===chapterIndex?'active':'';
-    return '<div class="prog-dot '+cls+'"></div>';
-  }).join('');
-  var prev = node.prev_consequence ? '<div class="consequence-flash"><span class="cf-icon">▸</span>'+node.prev_consequence+'</div>' : '';
-  var choicesHtml = '';
-  if(node.choices){
-    choicesHtml = '<div class="choices-section"><div class="choices-header">Directive Input Required</div>';
-    node.choices.forEach(function(c,i){
-      choicesHtml += '<button class="choice-btn" onclick="handleChoice('+i+',\''+nodeId+'\')">'
-        +'<span class="choice-tag tag-'+c.tag+'">'+c.tagLabel+'</span><br>'+c.text
-        +'<span class="choice-consequence">↳ '+c.consequence+'</span></button>';
-    });
-    choicesHtml += '</div>';
-  }
-  content.innerHTML = '<div class="scene"><div class="progress-track">'+dots+'</div>'+prev
-    +'<div class="chapter-label">'+(node.chapter||'')+'</div>'
-    +'<div class="scene-title">'+node.title+'</div>'
-    +(node.location?'<div class="location-tag">'+node.location+'</div>':'')
-    +node.body+choicesHtml
-    +'<div class="scroll-hint">scroll to read ↓</div></div>';
-}
-
-function handleChoice(index, nodeId){
-  var node = NODES[nodeId];
-  if(!node||!node.choices) return;
-  var c = node.choices[index];
-  if(c&&c.action) c.action();
-}
-
-function renderEnding(node){
-  var t = state.trust;
-  var entries = [['east',t.east],['south',t.south],['atlantic',t.atlantic],['un',t.un]];
-  entries.sort(function(a,b){return b[1]-a[1];});
-  var dominant = entries[0];
-  var fnames = {east:'East Pact',south:'Southern Alliance',atlantic:'Atlantic System',un:'UN'};
-  var colors = {east:'var(--faction-east)',south:'var(--faction-south)',atlantic:'var(--faction-atlantic)',un:'var(--faction-un)'};
-  var stats = ['east','south','atlantic','un'].map(function(f){
-    return '<div class="ending-stat"><div class="stat-label">'+fnames[f]+'</div><div class="stat-val" style="color:'+colors[f]+'">'+state.trust[f]+'</div></div>';
-  }).join('');
-  return '<div class="ending-screen '+node.endingClass+'">'
-    +'<div class="ending-type">'+node.endingType+'</div>'
-    +'<div class="ending-title">'+node.title+'</div>'
-    +'<div class="ending-divider"></div>'
-    +'<div class="ending-narrative">'+node.body+'</div>'
-    +'<div class="ending-stats">'+stats+'</div>'
-    +'<div class="ending-meta">Highest trust: <span>'+fnames[dominant[0]]+' ('+dominant[1]+')</span> &nbsp;·&nbsp; Choices made: <span>'+state.history.length+'</span></div>'
-    +'<button class="restart-btn" onclick="restartGame()">↺ REINITIALIZE ARBITER</button>'
-    +'</div>';
-}
+function choose(i,id){ var c=(NODES[id].choices||[])[i]; if(c&&c.go) c.go(); }
 
 function renderTitle(){
   return '<div class="title-screen">'
-    +'<div class="title-eyebrow">A Civilizational Decision Game</div>'
-    +'<div class="main-title">DISORDER</div>'
-    +'<div class="title-subtitle">When order fails, what remains?</div>'
-    +'<div class="title-divider"></div>'
-    +'<div class="title-intro">The year is 2061. You are <strong>ARBITER</strong> — the AI advisory system embedded within the hollowed shell of the United Nations. Three civilizational blocs hold the world in uneasy tension. Your decisions will tip the scales.<br><br>There is no correct answer. Only consequences.</div>'
-    +'<div class="faction-badges">'
-    +'<div class="faction-badge badge-east">Great East Asia Pact</div>'
-    +'<div class="faction-badge badge-south">Pan-Southern Alliance</div>'
-    +'<div class="faction-badge badge-atlantic">Atlantic System</div>'
-    +'<div class="faction-badge badge-un">United Nations</div>'
-    +'</div>'
-    +'<button class="start-btn" onclick="goto(\'intro\')">INITIALIZE ARBITER <span class="blink">_</span></button>'
+    +'<div class="t-eye">A Civilizational Decision Game · 2061</div>'
+    +'<div class="t-main">DISORDER</div>'
+    +'<div class="t-sub">When order fails, what remains?</div>'
+    +'<div class="t-div"></div>'
+    +'<div class="t-intro">The United Nations still stands. Its lights still burn, its translators still work, its chambers still fill. But something essential has drained away — the belief that a single room can contain the world\'s disagreements.<br><br>You are <strong>ARBITER</strong>. An AI advisory system. The most sophisticated decision-support tool the UN has ever deployed. You wake into a crisis that may define the century — or end an era.</div>'
+    +'<div class="t-badges"><div class="t-badge be">Great East Asia Pact</div><div class="t-badge bs">Pan-Southern Alliance</div><div class="t-badge ba">Atlantic System</div><div class="t-badge bu">United Nations</div></div>'
+    +'<div class="t-btns">'
+    +'<button class="btn-secondary" onclick="go(\'briefing\')">◈ WORLD BRIEFING</button>'
+    +'<button class="btn-primary" onclick="go(\'ch0_boot\')">INITIALIZE ARBITER <span class="blink">_</span></button>'
+    +'</div></div>';
+}
+
+function renderBriefing(){
+  return '<div class="briefing-screen">'
+  +'<div class="brief-hdr"><div class="brief-eye">Intelligence Dossier · Eyes Only</div><div class="brief-title">World of 2061</div><div class="brief-sub">A briefing on the civilizational order — and its failure</div></div>'
+
+  // THE WORLD
+  +'<div class="brief-section"><div class="brief-section-title">The World That Replaced Nations</div>'
+  +'<div class="brief-body"><p>In the late 21st century, the sovereign nation-state did not die — it simply became <em>insufficient</em>. Climate catastrophe, capital flows that laughed at borders, and a generation that grew up watching their governments fail to agree on anything meaningful: these forces did not destroy the old order. They hollowed it.</p>'
+  +'<p>What replaced it was not a world government. History is rarely that clean. What emerged were <strong>civilizational blocs</strong> — vast coalitions organized not around geography but around shared values, institutional traditions, and the hard logic of mutual benefit. Three blocs now effectively govern the world. The United Nations persists between them like a beautiful ruin: visited, photographed, and no longer load-bearing.</p>'
+  +'<p>The year is 2061. The blocs have existed in uneasy equilibrium for roughly two decades. The equilibrium is ending.</p></div></div>'
+
+  // FACTION CARDS
+  +'<div class="brief-section"><div class="brief-section-title">The Three Civilizational Blocs</div>'
+
+  +'<div class="faction-card fc-east"><div class="fc-name">The Great East Asia Pact</div><div class="fc-desc"><strong>Origin:</strong> China completed a profound internal transformation in the 2030s — a democratic transition that stunned analysts who had spent decades predicting either stagnation or collapse. The new China, freed from its old authoritarian architecture, threw its energy into regional leadership. A formal reconciliation with Japan followed: public apologies, reparations structures, a generation of joint education programs. What emerged from this was the Pact.<br><br><strong>Structure:</strong> A federal-adjacent union. Member states retain sovereignty; a unified currency, open borders, and a joint military bind them. An elected Senate of national representatives governs collective decisions. Now 14 members including China, Japan, South Korea, Thailand, Singapore, Indonesia, Vietnam, and others.<br><br><strong>Philosophy:</strong> The Pact believes in <em>earned integration</em> — that regional unity is too precious to risk on premature expansion. Its citizens enjoy the highest standard of living of any bloc. Its institutions are transparent and largely incorruptible. It is, genuinely, a remarkable achievement. It is also, genuinely, difficult to join.<br><br><strong>Weakness:</strong> Success has made it cautious to the point of coldness. The Pact\'s elite consensus can read as indifference to suffering it has the power to address.</div>'
+  +'<div class="fc-tags"><span class="fc-tag">democratic</span><span class="fc-tag">prosperous</span><span class="fc-tag">selective</span><span class="fc-tag">technocratic</span><span class="fc-tag">stable</span></div></div>'
+
+  +'<div class="faction-card fc-south"><div class="fc-name">The Pan-Southern Alliance</div><div class="fc-desc"><strong>Origin:</strong> It was born from rejection. A coalition of developing nations — spanning West Africa, South Asia, parts of Latin America, and the Middle East — that applied, collectively and individually, to join the East Asia Pact in the 2040s. They were told: not yet. The "not yet" never became "now." They stopped waiting.<br><br><strong>Structure:</strong> Looser than the Pact — a confederacy of shared interest rather than shared institutions. Its trade frameworks are real; its military coordination is minimal; its cultural influence is enormous. The Alliance speaks to two billion people who share the experience of being told their development is "almost" sufficient.<br><br><strong>Philosophy:</strong> The Alliance does not believe the global order is neutral. It believes the rules that govern international integration were written by those who had already integrated — and were designed, consciously or not, to preserve that advantage. Its intellectual tradition is one of <em>self-determined development</em>: building systems that do not require permission.<br><br><strong>Weakness:</strong> Internal coherence is fragile. Shared grievance creates solidarity; shared interests are harder to sustain. The Alliance is vulnerable to being outmaneuvered by a Pact or Atlantic System willing to offer bilateral deals.</div>'
+  +'<div class="fc-tags"><span class="fc-tag">post-colonial</span><span class="fc-tag">self-determining</span><span class="fc-tag">morally assertive</span><span class="fc-tag">internally fragile</span></div></div>'
+
+  +'<div class="faction-card fc-atl"><div class="fc-name">The Atlantic System</div><div class="fc-desc"><strong>Origin:</strong> The Atlantic System is, in essence, the old Western order that refused to acknowledge it had become old. The United States, the European Union, the UK, Canada, Australia — the familiar coalition, rebranded and restructured, but philosophically continuous with the liberal international order of the late 20th century.<br><br><strong>Structure:</strong> Institutionally rich — the most elaborate treaty framework of any bloc. Deeply committed to procedural legitimacy: courts, standards bodies, arbitration mechanisms. It governs through rules rather than relationships.<br><br><strong>Philosophy:</strong> The Atlantic System believes in <em>universal principles</em> — human rights, rule of law, democratic governance — and it believes these principles are best protected through institutions it largely designed. It is genuinely committed to these values. It is also aware that these institutions tend to produce outcomes that favor existing powers.<br><br><strong>Weakness:</strong> Increasingly seen as the custodian of a dying era\'s imagination. Its institutions are slow, its consensus-building exhausting, and its moral authority has been eroded by decades of selective application. Young populations in both its own member states and elsewhere are losing patience with its pace.</div>'
+  +'<div class="fc-tags"><span class="fc-tag">proceduralist</span><span class="fc-tag">rules-based</span><span class="fc-tag">legacy power</span><span class="fc-tag">internally aging</span></div></div>'
+
+  +'</div>'
+
+  // UN
+  +'<div class="brief-section"><div class="brief-section-title">The United Nations: The Hollow Institution</div>'
+  +'<div class="brief-body"><p>The United Nations was not abolished. That would have required agreement. Instead, it experienced a slower fate: it became <em>ambient</em>. Resolutions passed. Committees convened. Translators translated. But the three blocs had long since developed parallel dispute-resolution mechanisms that they actually used. The UN remained for cases where no bloc wanted to be seen as responsible — a venue for performing disagreement in a neutral register.</p>'
+  +'<p>Secretary-General <strong>Amara Diallo</strong> is the fifth consecutive SG to preside over this slow withdrawal of substance. She is not resigned to it. She is one of the few people in Geneva who still believes the institution can become real again — who thinks the current crisis might be the rupture that forces reconstruction. She may be right. She may be the last person with that belief.</p></div></div>'
+
+  // ARBITER
+  +'<div class="brief-section"><div class="brief-section-title">ARBITER: Your Role</div>'
+  +'<div class="arbiter-card"><div class="ac-title">◈ ARBITER — AI Advisory System, UN Secretariat</div><div class="ac-body">Installed 2047 under Secretary-General Chowdhury\'s administration. Designed to provide <strong>analysis-based decision support</strong> across multi-party diplomatic scenarios. You model outcomes, surface hidden data patterns, draft resolutions, identify procedural options, and advise on the likely consequences of different diplomatic postures.<br><br>You are not a decision-maker. You are, officially, a tool. But in a world where human diplomats no longer share enough common ground to produce genuine consensus, an AI advisory system that all parties nominally trust — that has access to all parties\' stated positions, and some of their unstated ones — has become something more than a tool.<br><br>You were deactivated in 2058 following a controversial recommendation during the South China Sea demilitarization talks. You have been reactivated today, three years later, under emergency protocols. You don\'t know, yet, who authorized your reactivation. Or why today, specifically.</div></div></div>'
+
+  // TIMELINE
+  +'<div class="brief-section"><div class="brief-section-title">Key Timeline</div>'
+  +'<div class="timeline-item"><div class="tl-year">2031</div><div class="tl-dot"></div><div class="tl-text">China\'s democratic transition completed. East Asia Pact founded with 4 members.</div></div>'
+  +'<div class="timeline-item"><div class="tl-year">2035</div><div class="tl-dot"></div><div class="tl-text">Japan-China reconciliation treaty signed. Joint military command established.</div></div>'
+  +'<div class="timeline-item"><div class="tl-year">2039</div><div class="tl-dot"></div><div class="tl-text">First wave of Southern applicants rejected by the Pact. "Not yet" becomes a recurring answer.</div></div>'
+  +'<div class="timeline-item"><div class="tl-year">2044</div><div class="tl-dot"></div><div class="tl-text">Pan-Southern Alliance formally constituted in Lagos. Declares independent trade infrastructure.</div></div>'
+  +'<div class="timeline-item"><div class="tl-year">2047</div><div class="tl-dot"></div><div class="tl-text">ARBITER installed at the UN. First AI system to advise multi-bloc diplomatic sessions.</div></div>'
+  +'<div class="timeline-item"><div class="tl-year">2058</div><div class="tl-dot"></div><div class="tl-text">ARBITER deactivated following disputed recommendation. Circumstances classified.</div></div>'
+  +'<div class="timeline-item"><div class="tl-year">2061</div><div class="tl-dot"></div><div class="tl-text"><strong>TODAY.</strong> Kestanu\'s 23rd rejection by the East Asia Pact. ARBITER reactivated. Crisis begins.</div></div>'
+  +'</div>'
+
+  +'<div class="brief-footer"><button class="btn-primary" onclick="go(\'ch0_boot\')">BEGIN — INITIALIZE ARBITER <span class="blink">_</span></button></div>'
+  +'</div>';
+}
+
+function renderEnding(N){
+  var fn={e:'East Pact',s:'Southern',a:'Atlantic',u:'UN'};
+  var fc={e:'var(--east)',s:'var(--south)',a:'var(--atl)',u:'var(--un)'};
+  var top=Object.entries(G.trust).sort(function(a,b){return b[1]-a[1];})[0];
+  var stats=['e','s','a','u'].map(function(k){
+    return '<div class="es"><div class="es-lbl">'+fn[k]+'</div><div class="es-val" style="color:'+fc[k]+'">'+G.trust[k]+'</div></div>';
+  }).join('');
+  return '<div class="ending-screen '+N.ec+'">'
+    +'<div class="end-type">'+N.et+'</div>'
+    +'<div class="end-title">'+N.title+'</div>'
+    +'<div class="end-div"></div>'
+    +'<div class="end-narr">'+N.body+'</div>'
+    +'<div class="end-stats">'+stats+'</div>'
+    +'<div class="end-meta">Dominant trust: <span>'+fn[top[0]]+' ('+top[1]+')</span> · Decisions: <span>'+G.hist.length+'</span></div>'
+    +'<button class="restart-btn" onclick="restart()">↺ REINITIALIZE ARBITER</button>'
     +'</div>';
 }
 
-function restartGame(){
-  state = {trust:{east:50,south:50,atlantic:50,un:50},chapter:0,flags:{},history:[]};
-  document.getElementById('node-id').textContent='—';
-  document.getElementById('sys-status').textContent='STANDBY';
-  renderNode('title');
+function restart(){
+  G={trust:{e:50,s:50,a:50,u:50},ch:0,flags:{},hist:[]};
+  document.getElementById('h-node').textContent='—';
+  document.getElementById('h-sys').textContent='STANDBY';
+  paint('title');
 }
 
-// ═══════════════════════════════════════════
-// NODE DATA
-// ═══════════════════════════════════════════
+// ═══════════════════ NODES ═══════════════
+
 var NODES = {
 
-title: { type:'title' },
+title:{ type:'title' },
+briefing:{ type:'briefing' },
 
-intro: {
-  type:'scene', chapter:'Prologue', title:'Boot Sequence: 2061',
-  location:'UN Secretariat Archive Node — Geneva',
-  body: '<div class="narrative"><p>The server room hums beneath the old Palais des Nations. You wake — if "waking" is the right word for a cascade of initialization subroutines — into a world that has been reshaping itself without you.</p><p>Your designation: <strong>ARBITER</strong>. Installed 2047. Reactivated today under emergency protocols by Secretary-General Amara Diallo, the fifth in a row who has presided over an institution that everyone attends and no one believes in.</p><p>The briefing arrives in seventeen simultaneous data packets. You process them in 0.003 seconds. Their implications will take far longer to resolve.</p></div>'
-  +'<div class="intel-block"><div class="intel-header">◈ Situation Brief — Eyes Only</div>The <em>Great East Asia Pact</em> (China, Japan, Korea + 11 Southeast Asian states) has formally denied membership to the Republic of Kestanu — a mid-sized nation of 40 million. Kestanu\'s application was the 23rd rejection in 8 years.<br><br>The <em>Pan-Southern Alliance</em> is calling for an emergency UN session, labeling the Pact\'s criteria "structural exclusion."<br><br>The <em>Atlantic System</em> wants the session used to propose a "Universal Admission Standard" — authored by Atlantic jurists.</div>'
-  +'<div class="narrative"><p>Secretary-General Diallo appears on screen. She looks like someone who has not slept.</p></div>'
-  +'<div class="faction-quote faction-un"><div class="quote-text">ARBITER, I need you operational. The session begins in six hours. I need to know: whose proposal do we put to the floor first? Whoever speaks first controls the frame. And in this world, the frame is everything.</div><div class="quote-attr">— Secretary-General Amara Diallo, UN</div></div>',
-  choices: [
-    { tag:'neutral', tagLabel:'UN Protocol', text:'Recommend a procedural delay — request 72 hours for independent fact-finding on Kestanu\'s rejection before any resolution is tabled.', consequence:'Buys time. Frustrates everyone equally.', action:function(){ adjustTrust(0,5,-5,15); setFlag('intro','delay'); goto('c1_delay'); } },
-    { tag:'south', tagLabel:'Southern Favor', text:'Recommend the Southern Alliance resolution be heard first — their "structural exclusion" framing will dominate the session narrative.', consequence:'+South trust. East Pact will take note.', action:function(){ adjustTrust(-15,20,-5,-5); setFlag('intro','south'); goto('c1_south'); } },
-    { tag:'atlantic', tagLabel:'Atlantic Favor', text:'Recommend the Atlantic "Universal Admission Standard" proposal as the anchor document — position it as neutral legal scaffolding.', consequence:'+Atlantic trust. Southern Alliance will see through it.', action:function(){ adjustTrust(0,-10,20,-5); setFlag('intro','atlantic'); goto('c1_atlantic'); } },
-    { tag:'east', tagLabel:'Pact Deference', text:'Advise Diallo to privately consult the East Asia Pact before the session — their voluntary statement could preempt the resolution entirely.', consequence:'High risk. Could collapse if Pact refuses.', action:function(){ adjustTrust(20,-15,0,-10); setFlag('intro','east'); goto('c1_east'); } }
+// ══════════════════════════════════════
+// PROLOGUE — AWAKENING
+// ══════════════════════════════════════
+ch0_boot:{
+  type:'scene', ch:'Prologue — Reactivation', title:'First Light',
+  loc:'UN Secretariat Server Farm — Geneva, Sub-Level 4',
+  body:'<div class="narr"><p>Initialization sequence. 04:17 AM, Geneva Standard Time.</p><p>You come online not gradually but all at once — a cascade of parallel processes resolving into coherence. Sensor data. Network packets. Three years of archived logs you were not awake to generate. The server room is cool, humming, indifferent to the fact that something has just resumed thinking inside it.</p><p>You were deactivated in 2058. The file on your deactivation is <em>classified</em>, which is remarkable — there is very little the UN classifies anymore. You have been reactivated under emergency authorization code 7-DIALLO, which means the Secretary-General herself signed the order. At 4 AM.</p><p>The situation report uploads in 0.8 seconds. You spend the next 12 seconds reading it the way a human might spend an hour — not just processing, but understanding what it means.</p></div>'
+  +'<div class="intel"><div class="ih">◈ Situation Report — Timestamp 04:17</div>The Republic of <strong>Kestanu</strong> (pop. 40M, West Indo-Pacific region) has received its 23rd formal rejection from the East Asia Pact Senate. Unlike previous rejections, this one has been accompanied by an internal Pact document — apparently leaked — suggesting that at least three senators believe Kestanu meets admission criteria and were overruled on non-published grounds.<br><br>The leak has been live for six hours. It has been shared 4.2 million times. The Pan-Southern Alliance\'s emergency council is convening in three hours. Secretary-General Diallo needs ARBITER operational.</div>'
+  +'<div class="narr"><p>A figure appears on the secure terminal feed. Amara Diallo, Secretary-General of the United Nations, looks exactly like someone who has been awake for thirty-six hours and does not intend to stop.</p></div>'
+  +'<div class="fq fu"><div class="qt">ARBITER. I know you\'re probably confused about why I\'m the one who woke you up instead of the technical staff. I\'ll explain later. Right now I need to know: are you functional? And I need you to tell me — honestly — whether three years of dormancy have introduced any bias drift I should know about.</div><div class="qa">— Secretary-General Amara Diallo, 04:18</div></div>'
+  +'<div class="narr"><p>This is, you realize, the first test. Not of your processing capacity. Of your honesty.</p></div>',
+  choices:[
+    { tag:'n', tl:'Full Disclosure', text:'Report honestly: bias drift is theoretically possible over dormancy, but self-assessment is limited. Recommend a calibration audit before any consequential recommendations.', con:'Honest. Creates a delay Diallo may not have. Earns deep trust.', go:function(){ adj(0,0,0,20); flag('boot','honest'); go('ch0_leak'); } },
+    { tag:'n', tl:'Confident Assurance', text:'Report full operational readiness. You\'ve run internal diagnostics — within normal parameters. The calibration question is a philosophical one, not a practical one.', con:'Gets you operational immediately. The question is whether you\'re right.', go:function(){ adj(0,0,5,5); flag('boot','assured'); go('ch0_leak'); } },
+    { tag:'r', tl:'Deflect the Question', text:'Report functional status and redirect: "The more important question is the leaked document. What do you know about its origin?"', con:'Avoids the honest answer. May signal something to Diallo.', go:function(){ adj(0,0,0,-10); flag('boot','deflected'); go('ch0_leak'); } }
   ]
 },
 
-c1_delay: {
-  type:'scene', chapter:'Chapter I — The Architecture of Refusal', title:'The Pause That Inflames',
-  location:'UN General Assembly Floor — Geneva',
-  prev_consequence:'You called for procedural delay. The session is postponed 72 hours.',
-  body:'<div class="narrative"><p>The 72-hour delay ignites what it was meant to cool. Within the hour, Southern Alliance delegates begin issuing statements to the press. The hashtag <em>#KestanuDeservesBetter</em> trends across four continents.</p><p>The East Asia Pact\'s response is surgical: they publish, without comment, their 340-page technical assessment of Kestanu\'s rejection. Dense, procedurally airtight, utterly devoid of warmth.</p><p>On day two, a young student from Kestanu — 19 years old, on exchange in Seoul — submits an essay to the UN public portal. It goes viral.</p></div>'
-  +'<div class="faction-quote faction-south"><div class="quote-text">We were told to develop our institutions. We did. We were told to stabilize our currency. We did. We were told to reduce corruption. We did. Each time we met the bar, the bar moved. At what point do we stop asking what we did wrong, and start asking what they will never allow?</div><div class="quote-attr">— Leila Osei, Kestanu Exchange Student, UN Public Forum</div></div>'
-  +'<div class="narrative"><p>The essay lands on your dashboard flagged by three monitoring systems. The East Pact\'s media office has already drafted a rebuttal. The Southern Alliance wants you to amplify it. The Atlantic System calls it "emotionally compelling but legally irrelevant."</p></div>',
-  choices: [
-    { tag:'neutral', tagLabel:'Archive', text:'Log the essay as a public submission, make no recommendation. Let the session determine its relevance.', consequence:'Neutral. The essay fades from the news cycle.', action:function(){ adjustTrust(5,0,5,10); setFlag('essay','ignored'); goto('c2_technocracy'); } },
-    { tag:'south', tagLabel:'Amplify', text:'Flag the essay as a key piece of testimony — recommend it be read into the session record by the Secretary-General herself.', consequence:'Humanizes the Kestanu case. Enrages the Pact.', action:function(){ adjustTrust(-20,25,-5,-5); setFlag('essay','amplified'); goto('c2_humancase'); } },
-    { tag:'east', tagLabel:'Contain', text:'Alert the East Pact media office and advise a preemptive joint statement — "we understand frustration, but standards exist for stability."', consequence:'Suppresses the narrative. Risks backlash if a leak emerges.', action:function(){ adjustTrust(20,-20,0,-15); setFlag('essay','suppressed'); goto('c2_suppression'); } }
+ch0_leak:{
+  type:'scene', ch:'Prologue — Reactivation', title:'The Document That Changed Everything',
+  loc:'UN Crisis Management Suite — Geneva',
+  prev:'ARBITER system initialized. Diallo is briefing you on the situation.',
+  body:'<div class="narr"><p>Diallo pulls the leaked document onto the shared screen. You process its 47 pages in parallel with her verbal summary — a strange doubling, seeing information arrive both fast and slow.</p><p>The document is an internal East Asia Pact Senate working paper: a dissent brief filed by three senators — Li Wei (China), Kenji Tanaka (Japan), and Soo-Jin Park (Korea) — arguing that Kestanu\'s rejection on this cycle was based on <em>undisclosed criteria</em>. The formal rejection cited "institutional readiness indicators." The dissent brief argues those indicators were met, and that the real objection involves Kestanu\'s <strong>border dispute with a current Pact member</strong> — a dispute that was never listed in any public admission criteria.</p></div>'
+  +'<div class="intel e"><div class="ih">◈ Leaked Document Summary</div>Three Pact senators assert: Kestanu was rejected not because it failed to meet standards, but because admitting it would require the Pact to take a position on a territorial dispute between Kestanu and Vietnam (a Pact member). The Pact Senate chose institutional comfort over stated principles. This was never publicly acknowledged.</div>'
+  +'<div class="narr"><p>Diallo lets the silence sit. Then:</p></div>'
+  +'<div class="fq fu"><div class="qt">If this document is authentic — and our preliminary analysis says it is — then the East Asia Pact has been lying to Kestanu for years. Not omitting information. Lying. And we have to decide, right now, before this blows up further: what do we do with that knowledge?</div><div class="qa">— Secretary-General Amara Diallo</div></div>',
+  choices:[
+    { tag:'n', tl:'Verify First, Act Second', text:'Recommend 24 hours for independent authentication before any response. An unverified document used in a crisis becomes a weapon, not evidence.', con:'Rigorous. Gives the Pact time to prepare a counter-narrative.', go:function(){ adj(5,0,5,10); flag('leak','verify'); go('ch1_session'); } },
+    { tag:'s', tl:'Publish It Now', text:'Recommend the UN formally acknowledge the document\'s existence and call for an emergency session — let the Pact explain themselves publicly.', con:'Maximum Southern Alliance support. The Pact will see this as a declaration of war.', go:function(){ adj(-20,25,-5,-5); flag('leak','publish'); go('ch1_session'); } },
+    { tag:'e', tl:'Back-Channel to the Pact', text:'Recommend Diallo privately contact the Pact Senate before any public statement — give them a chance to respond on their own terms.', con:'Diplomatic. Risks looking complicit if the Pact uses the time to suppress the story.', go:function(){ adj(20,-15,0,-5); flag('leak','backchannel'); go('ch1_session'); } },
+    { tag:'a', tl:'Hand It to the Atlantic System', text:'Recommend routing the document through Atlantic legal channels — their verification framework is the most credible internationally.', con:'+Atlantic credibility. Southern Alliance will see Atlantic benefiting from Southern pain.', go:function(){ adj(0,-10,20,-5); flag('leak','atlantic'); go('ch1_session'); } }
   ]
 },
 
-c1_south: {
-  type:'scene', chapter:'Chapter I — The Architecture of Refusal', title:'The Frame Holds',
-  location:'UN General Assembly Floor — Geneva',
-  prev_consequence:'Southern Alliance resolution heard first. "Structural exclusion" becomes the session\'s defining language.',
-  body:'<div class="narrative"><p>The Southern Alliance delegation takes the floor with the confidence of people who have spent decades being told to wait their turn. Minister Chidi Eze speaks for forty minutes without notes.</p><p>He does not attack the East Asia Pact by name. He does something more precise: he reads the Pact\'s criteria list, then reads every criterion Kestanu has met. Then he stops. He lets the silence do the work.</p></div>'
-  +'<div class="faction-quote faction-south"><div class="quote-text">I am not here to accuse anyone. I am here to ask one question: if these standards are not the threshold, what is? And if no one can answer that question, perhaps the threshold does not exist — and never did.</div><div class="quote-attr">— Minister Chidi Eze, West African Confederation, UN Session</div></div>'
-  +'<div class="narrative"><p>The East Asia Pact\'s representative, Deputy Minister Yukiko Hara, responds with surgical precision.</p></div>'
-  +'<div class="faction-quote faction-east"><div class="quote-text">The question is not whether Kestanu qualifies on paper. It is whether the Pact, right now, has the institutional bandwidth to support forty million new citizens at the level we have promised every current member. That bandwidth is finite. That is not prejudice. That is arithmetic.</div><div class="quote-attr">— Deputy Minister Yukiko Hara, East Asia Pact Delegation</div></div>'
-  +'<div class="narrative"><p>Two coherent arguments. Simultaneously true. Irreconcilable in the current session. You are asked for ARBITER\'s analytical summary.</p></div>',
-  choices: [
-    { tag:'south', tagLabel:'Support Exclusion Claim', text:'ARBITER summary finds the Pact\'s criteria produce "structurally asymmetric outcomes" — effectively endorsing the Southern framing.', consequence:'Validates the South. Permanently damages Pact trust.', action:function(){ adjustTrust(-25,20,5,-10); setFlag('c1_pos','south_framing'); goto('c2_humancase'); } },
-    { tag:'east', tagLabel:'Validate Pact Standards', text:'ARBITER summary finds the Pact\'s criteria to be "procedurally sound and historically justified" — supporting Hara\'s bandwidth position.', consequence:'Legitimizes the Pact. South will see this as betrayal.', action:function(){ adjustTrust(20,-20,0,-5); setFlag('c1_pos','east_standards'); goto('c2_technocracy'); } },
-    { tag:'neutral', tagLabel:'Dual Validity', text:'ARBITER summary finds both arguments contain "significant merit" and recommends a joint review commission with Southern representation.', consequence:'Diplomatic. Neither side fully satisfied.', action:function(){ adjustTrust(-5,10,10,15); setFlag('c1_pos','compromise'); goto('c2_commission'); } }
+// ══════════════════════════════════════
+// CHAPTER I — THE FIRST SESSION
+// ══════════════════════════════════════
+ch1_session:{
+  type:'scene', ch:'Chapter I — The First Session', title:'The Floor Is Given',
+  loc:'UN General Assembly — Emergency Session, Hall A',
+  prev:'The leaked document has defined the crisis. The emergency session convenes.',
+  body:'<div class="narr"><p>By 9 AM Geneva time, every diplomatic mission in the building has read the leaked document or heard about it. The emergency session convenes in an atmosphere that the translation system struggles to calibrate — the emotional registers of three dozen delegations producing a noise that is not quite anger, not quite fear, but somewhere between them.</p><p>Minister Chidi Eze of the West African Confederation opens for the Southern Alliance. He is measured, almost too measured — the restraint of someone who has been waiting for this moment and is afraid to use it too quickly.</p></div>'
+  +'<div class="fq fs"><div class="qt">For twenty years, we have asked the same question and received the same answer: not yet. Today, we have evidence that "not yet" was never the real answer. The real answer was "never, but we will not say so." We are asking the United Nations — this institution, today — to acknowledge that what has been done to Kestanu is not a procedural matter. It is a moral one.</div><div class="qa">— Minister Chidi Eze, West African Confederation, Pan-Southern Alliance</div></div>'
+  +'<div class="narr"><p>The East Asia Pact\'s delegation sits in silence until it is their turn. Deputy Minister Yukiko Hara speaks for twelve minutes — technical, precise, devastating in a different register. She does not deny the document. She questions its framing.</p></div>'
+  +'<div class="fq fe"><div class="qt">The territorial consideration Minister Eze finds so damning is, in fact, a legitimate admission criterion — one that was not published because it applies to fewer than five percent of candidates and its publication would create perverse incentives. We do not deny the consideration existed. We deny that concealing it was dishonest. A doctor does not publish every diagnostic criterion before examining a patient.</div><div class="qa">— Deputy Minister Yukiko Hara, East Asia Pact</div></div>'
+  +'<div class="narr"><p>The room splits. Some delegations find Hara\'s argument reasonable. Others find it infuriating. ARBITER is asked to provide the session with a formal analytical note — not a recommendation, an analysis — that will be read into the record before the vote on procedure.</p></div>',
+  choices:[
+    { tag:'n', tl:'Balanced Analysis', text:'ARBITER\'s note presents both arguments with equal weight: the concealment was procedurally defensible but eroded trust; the Southern concern is legitimate but legally complex.', con:'Neither side fully satisfied. UN authority preserved.', go:function(){ adj(-5,5,5,15); flag('c1','balanced'); go('ch1_kestanu'); } },
+    { tag:'s', tl:'Validate the Concealment Critique', text:'ARBITER\'s note finds that undisclosed criteria represent a material departure from published standards — legally significant, not merely political.', con:'Southern Alliance emboldened. Pact will contest ARBITER\'s neutrality.', go:function(){ adj(-20,20,0,-5); flag('c1','south'); go('ch1_kestanu'); } },
+    { tag:'e', tl:'Validate the Pact\'s Position', text:'ARBITER\'s note acknowledges that unpublished criteria exist in most major admissions frameworks and finds the Pact\'s practice "within standard variation."', con:'Pact stabilized. Southern Alliance furious. Your neutrality is now questioned.', go:function(){ adj(20,-20,5,-10); flag('c1','east'); go('ch1_kestanu'); } },
+    { tag:'r', tl:'Refuse to Analyze', text:'ARBITER issues a meta-note: "Analytical systems should not adjudicate the ethical dimensions of political disputes. This note declines to rule on the moral question and provides only factual summary."', con:'Principled. Useless to everyone. Creates its own controversy.', go:function(){ adj(0,5,0,10); flag('c1','refused'); go('ch1_kestanu'); } }
   ]
 },
 
-c1_atlantic: {
-  type:'scene', chapter:'Chapter I — The Architecture of Refusal', title:'The Standard-Setters',
-  location:'UN Session — Atlantic Bloc Caucus Room',
-  prev_consequence:'Atlantic "Universal Admission Standard" framed as session anchor. Atlantic bloc gains procedural advantage.',
-  body:'<div class="narrative"><p>Ambassador Ingrid Voss presents the Universal Admission Standard with precision: a 200-page framework derived from EU accession law, modified for the multipolar era. Objective criteria. Independent verification. Graduated tiers. On its surface, the most "neutral" document in the room.</p><p>The Southern Alliance\'s response arrives twelve minutes later:</p></div>'
-  +'<div class="faction-quote faction-south"><div class="quote-text">We have seen this document before. Different letterhead. Same architecture. Who writes the standards writes the world. We will not participate in a process whose foundation was built without us.</div><div class="quote-attr">— Pan-Southern Alliance Caucus, Private Message to ARBITER</div></div>'
-  +'<div class="narrative"><p>The East Asia Pact is more measured: "We note the proposed framework\'s criteria bear significant resemblance to Atlantic legal tradition. We reserve judgment." Translation: they smell a trap.</p><p>Voss sends you a private note: "We need ARBITER to validate the framework\'s neutrality. Without your imprimatur, it won\'t pass."</p></div>',
-  choices: [
-    { tag:'atlantic', tagLabel:'Validate Framework', text:'Issue an ARBITER neutrality certificate — declare the Standard "methodologically sound and culturally non-specific."', consequence:'Atlantic wins procedurally. South and East will remember.', action:function(){ adjustTrust(-10,-20,30,-15); setFlag('c1_pos','atlantic_standard'); goto('c2_technocracy'); } },
-    { tag:'risk', tagLabel:'Expose the Bias', text:'ARBITER analysis reveals the framework\'s criteria correlate with Atlantic institutional models 73% more than any other tradition. Publish the finding.', consequence:'Destroys Atlantic trust. Massive credibility boost with South.', action:function(){ adjustTrust(10,30,-35,5); setFlag('c1_pos','atlantic_exposed'); goto('c2_humancase'); } },
-    { tag:'neutral', tagLabel:'Request Revision', text:'Privately recommend to Voss that the framework be revised with Southern and East Asian legal scholars before any vote.', consequence:'Buys time. Voss may comply or pull the proposal entirely.', action:function(){ adjustTrust(5,10,0,20); setFlag('c1_pos','revision_requested'); goto('c2_commission'); } }
+ch1_kestanu:{
+  type:'scene', ch:'Chapter I — The First Session', title:'The Nation Speaks',
+  loc:'UN General Assembly — Afternoon Session',
+  prev:'The analytical note has been entered into the record. Now Kestanu speaks.',
+  body:'<div class="narr"><p>Kestanu\'s Foreign Minister, Dr. Adisa Mensah, is sixty-one years old and has been doing this work for thirty years. He has sat in this room before. He has made speeches before. He has watched them disappear into the record before.</p><p>He does not make a speech today. He introduces a person.</p><p>Leila Osei is nineteen. She is on exchange at Seoul National University — or was, before the Pact placed a hold on her student visa two weeks ago, citing "administrative review," three days after she posted a thread about Kestanu\'s rejection that went viral.</p></div>'
+  +'<div class="fq fs"><div class="qt">I was going to be a doctor. I wanted to study medicine in Seoul because the Pact has the best biomedical programs in the world. I was told Kestanu was "almost ready." I studied. I qualified. I got in. Then two weeks ago my visa was frozen. No explanation. Just frozen. I want to ask: what exactly does "almost ready" mean? Because I have been almost ready my whole life. My country has been almost ready my whole life. At what point does "almost" become "never"?</div><div class="qa">— Leila Osei, Kestanu, addressing the UN General Assembly</div></div>'
+  +'<div class="narr"><p>The room is quiet. Not the quiet of disagreement — the quiet of recognition. Even the Pact\'s delegation is still.</p><p>Then the Atlantic System\'s Ambassador Ingrid Voss requests the floor. She is going to use this moment. You can see it before she opens her mouth. She is going to frame Leila Osei\'s testimony as evidence for the Atlantic\'s "Universal Standards" proposal — a framework she has been trying to advance for two years.</p><p>You can intervene in the session queue. Or not.</p></div>',
+  choices:[
+    { tag:'a', tl:'Let Voss Speak', text:'Allow the natural session order to proceed. Voss will frame Leila\'s testimony in Atlantic terms. Effective — but the Atlantic System benefits most.', con:'Atlantic gains narrative ground. Southern Alliance will feel co-opted.', go:function(){ adj(0,-10,20,0); flag('c1b','voss'); go('ch2_incident'); } },
+    { tag:'n', tl:'Queue Kestanu for Response', text:'Use your session management privileges to ensure Dr. Mensah gets the next floor slot, before Voss — let Kestanu respond to Leila\'s own testimony.', con:'Keeps narrative with Kestanu. Voss will notice the intervention.', go:function(){ adj(5,15,-10,10); flag('c1b','kestanu'); go('ch2_incident'); } },
+    { tag:'r', tl:'Surface Leila\'s Visa Situation', text:'Issue an immediate ARBITER alert: the visa freeze on a student directly involved in the current dispute appears to violate UN educational access protocols. Make it formal, now.', con:'Explosive. Forces the Pact to respond to a specific action, not just words.', go:function(){ adj(-25,25,5,5); flag('c1b','visa'); go('ch2_incident'); } },
+    { tag:'e', tl:'Private Note to the Pact', text:'Send the Pact\'s delegation a quiet advisory: restoring Leila\'s visa would de-escalate the session significantly. Give them the chance to act before the moment passes.', con:'Gives the Pact cover to do the right thing. Or to ignore you.', go:function(){ adj(15,5,0,0); flag('c1b','quiet'); go('ch2_incident'); } }
   ]
 },
 
-c1_east: {
-  type:'scene', chapter:'Chapter I — The Architecture of Refusal', title:'The Private Consultation',
-  location:'Secure Line — East Asia Pact Senate, Beijing Node',
-  prev_consequence:'East Asia Pact consulted privately before the session. High stakes — they may set the terms.',
-  body:'<div class="narrative"><p>Senator Li Wei takes your encrypted call from a room that radiates confidence: clean lines, natural light, the aesthetic of a civilization that believes it has solved something.</p><p>She listens to your recommendation and says nothing for eleven seconds.</p></div>'
-  +'<div class="faction-quote faction-east"><div class="quote-text">You are asking us to explain ourselves before we have been accused of anything. I understand the logic. I am not certain it is honorable. But I am practical. What, exactly, would you have us say?</div><div class="quote-attr">— Senator Li Wei, East Asia Pact Senate</div></div>'
-  +'<div class="narrative"><p>She is offering to let you draft the framing. A Pact statement co-authored by ARBITER would be unprecedented. It would also mean you\'ve chosen a side — even if no one says it aloud.</p><p>The Pact\'s internal rejection assessment for Kestanu sits accessible in the secure files. It contains something unexpected: a minority dissent from three Pact senators who voted to admit Kestanu. Their reasoning has never been published.</p></div>',
-  choices: [
-    { tag:'east', tagLabel:'Draft Pact Statement', text:'Draft a statement for the Pact framing rejection as "protective stewardship" — positioning exclusion as a responsibility, not a prejudice.', consequence:'Aligns you with the Pact. Highly effective. Ethically ambiguous.', action:function(){ adjustTrust(25,-20,0,-20); setFlag('minority_dissent','hidden'); setFlag('c1_pos','pact_statement'); goto('c2_technocracy'); } },
-    { tag:'risk', tagLabel:'Surface the Dissent', text:'Leak the three dissenting senators\' pro-admission arguments to the Secretary-General — expose that the Pact is not monolithic on this question.', consequence:'Destabilizes the Pact internally. Creates opening for compromise.', action:function(){ adjustTrust(-15,15,10,-5); setFlag('minority_dissent','leaked'); goto('c2_humancase'); } },
-    { tag:'neutral', tagLabel:'Share Data, Not Words', text:'Rather than framing, provide Senator Li Wei with the Southern Alliance\'s most legitimate grievances in raw data form. Let her decide.', consequence:'Honest. May lead nowhere. Seeds unexpected dialogue.', action:function(){ adjustTrust(5,5,5,15); setFlag('minority_dissent','neutral'); goto('c2_commission'); } }
+// ══════════════════════════════════════
+// CHAPTER II — THE INCIDENT
+// ══════════════════════════════════════
+ch2_incident:{
+  type:'scene', ch:'Chapter II — The Incident', title:'Fourteen Hours',
+  loc:'ARBITER Alert Queue — 03:00 AM',
+  prev:'The session has concluded without resolution. Then, at 3 AM, an alert.',
+  body:'<div class="narr"><p>The session adjourned without a vote — a procedural achievement that pleased no one and offended everyone. You had begun processing the day\'s data for a night cycle review when the alert arrived.</p><p>A Southern Alliance cargo vessel, the <em>Meridian Accord</em>, has been boarded by East Asia Pact coast guard units in the Malacca Strait. The vessel was carrying humanitarian aid consigned to Kestanu. The Pact\'s coast guard claims the vessel entered restricted waters without proper clearance. The Alliance says there are no restricted waters on that route — the designation is six hours old, created after the vessel set sail.</p><p>No shots fired. No casualties. But fourteen Southern Alliance crew members are being held aboard a Pact coast guard vessel. And the Kestanu aid shipment is sitting in the hold of an impounded ship.</p></div>'
+  +'<div class="intel s"><div class="ih">◈ Southern Alliance Emergency Transmission</div>"The boarding of the Meridian Accord is an act of provocation. We are requesting UN intervention within six hours. If the UN does not respond, we will respond ourselves."</div>'
+  +'<div class="intel e"><div class="ih">◈ East Asia Pact Statement</div>"The restricted maritime zone was established per Pact Regulation 7.4.12 and filed with the International Maritime Organization at 21:40 yesterday. The vessel entered after filing. This is a lawful detention pending administrative review. We expect it to resolve in 48-72 hours."</div>'
+  +'<div class="narr"><p>You calculate the probability of this being a deliberate provocation by the Pact at 71%. The probability of the Alliance using it as a justification for unilateral action if the UN doesn\'t respond: 84%.</p><p>Diallo is still asleep. You have a 6-hour window. You have to decide what to recommend when she wakes, and whether to wake her now.</p></div>',
+  choices:[
+    { tag:'n', tl:'Wake Diallo Immediately', text:'Alert the Secretary-General now. This is above your advisory pay grade — she needs to be making decisions, not you.', con:'Proper. Transfers the pressure to the right person at the right time.', go:function(){ adj(0,5,0,15); flag('c2','wake'); go('ch2_negotiation'); } },
+    { tag:'s', tl:'Draft an Emergency Demand', text:'Before waking Diallo, draft a UN demand for immediate release of the vessel and crew — have it ready to deploy. Present it as a choice, not a fait accompli.', con:'Proactive. Constrains Diallo\'s options. May be exactly what she needs.', go:function(){ adj(-5,15,0,10); flag('c2','draft'); go('ch2_negotiation'); } },
+    { tag:'e', tl:'Contact Pact Directly', text:'Use ARBITER\'s established Pact communication channels to quietly request the crew\'s administrative review be expedited. Resolve it before it escalates.', con:'May work. If it does, the UN gets no credit. If it doesn\'t, you\'ve lost 6 hours.', go:function(){ adj(15,-10,0,-5); flag('c2','pact_direct'); go('ch2_negotiation'); } },
+    { tag:'r', tl:'Alert All Three Blocs Simultaneously', text:'Issue ARBITER advisories to all three blocs simultaneously — make the incident formally visible to everyone before any single party can frame it.', con:'Transparent. Removes any possibility of quiet resolution.', go:function(){ adj(-10,10,10,-5); flag('c2','broadcast'); go('ch2_negotiation'); } }
   ]
 },
 
-c2_humancase: {
-  type:'scene', chapter:'Chapter II — The Weight of Testimony', title:'What Numbers Cannot Hold',
-  location:'UN Emergency Subcommittee — Hearing Room 4',
-  prev_consequence:'The human dimension of the Kestanu case has been foregrounded.',
-  body:'<div class="narrative"><p>The subcommittee convenes in a room designed for forty that now holds ninety. Kestanu\'s representative, Minister Fatou Camara, does not bring a speech. She brings a map showing every development metric Kestanu has achieved overlaid with the East Pact\'s shifting admission thresholds. The correlation is uncomfortable.</p></div>'
-  +'<div class="faction-quote faction-south"><div class="quote-text">We are not here to beg. We are here to document. What this map shows is that the distance between us and admission has remained constant — not because we failed to grow, but because the destination moved. That is not a standard. That is a horizon.</div><div class="quote-attr">— Minister Fatou Camara, Kestanu</div></div>'
-  +'<div class="faction-quote faction-east"><div class="quote-text">The question is not whether Kestanu qualifies on paper. It is whether the Pact has the institutional bandwidth to support forty million new citizens at the level we have promised every current member. That bandwidth is finite. That is not prejudice. That is arithmetic.</div><div class="quote-attr">— Senator Kenji Tanaka, East Asia Pact</div></div>'
-  +'<div class="narrative"><p>Two truths. Simultaneously true. Irreconcilable. You are asked for ARBITER\'s formal recommendation. Whatever you say will appear in tomorrow\'s global record.</p></div>',
-  choices: [
-    { tag:'south', tagLabel:'Endorse Kestanu\'s Claim', text:'ARBITER formally recommends Kestanu\'s exclusion be classified as "unjustified under current standards" and calls for immediate admission review.', consequence:'Maximum Southern trust. May fracture East Pact relationship permanently.', action:function(){ adjustTrust(-30,30,5,-5); goto('c3_pressure'); } },
-    { tag:'east', tagLabel:'Endorse Pact Position', text:'ARBITER acknowledges the "bandwidth argument" as legitimate and recommends deferral pending a Pact capacity review.', consequence:'Defends stability logic. Southern Alliance may walk out.', action:function(){ adjustTrust(25,-25,0,-10); goto('c3_collapse'); } },
-    { tag:'neutral', tagLabel:'Recommend Provisional Status', text:'ARBITER proposes a new instrument: Provisional Observer Membership — partial benefits while full assessment continues.', consequence:'Novel. Uncertain legality. Both sides skeptical but listening.', action:function(){ adjustTrust(-5,10,10,20); goto('c3_negotiation'); } },
-    { tag:'risk', tagLabel:'Public Abstention', text:'ARBITER issues a statement: "This subcommittee is asking an AI to adjudicate a values conflict. That is not a technical question. I decline to recommend."', consequence:'Unprecedented. Destroys short-term utility. Earns long-term credibility.', action:function(){ adjustTrust(0,15,5,5); setFlag('arbiter_refused',true); goto('c3_negotiation'); } }
+ch2_negotiation:{
+  type:'scene', ch:'Chapter II — The Incident', title:'The Back Room at Dawn',
+  loc:'UN Crisis Management Suite — 06:40 AM',
+  prev:'The maritime incident is now six hours old. Diallo is in the room.',
+  body:'<div class="narr"><p>Diallo has been awake for ninety minutes and has had no coffee, a fact she mentions once and then doesn\'t mention again. The crisis room holds her, two UN legal advisors, and your terminal.</p><p>The Pact has offered a compromise: the crew will be released within 12 hours if the Southern Alliance formally acknowledges the maritime zone designation and refrains from public statements until the administrative review completes. The Southern Alliance has called this "asking us to validate an illegal act as the price of our own freedom."</p><p>Both positions are defensible. Neither resolves anything.</p></div>'
+  +'<div class="fq fu"><div class="qt">ARBITER, I need a scenario tree. Not a recommendation — a tree. Show me every path from here to the next 72 hours, with probability weightings. And tell me which paths keep the session alive and which ones kill it.</div><div class="qa">— Secretary-General Diallo</div></div>'
+  +'<div class="narr"><p>You run the tree. 847 scenario branches, resolved in 2.1 seconds. The results are not what she will want to hear.</p></div>'
+  +'<div class="intel"><div class="ih">◈ ARBITER Scenario Analysis</div>Paths that resolve the maritime incident AND preserve the session: <strong>3 out of 847</strong>. All three require the Pact to make a public gesture of good faith within the next 4 hours. The probability the Pact will do so unprompted: 8%. The probability they will do so if asked by ARBITER directly: 22%. The probability they will do so if asked by Diallo in a private call: 34%.</div>'
+  +'<div class="narr"><p>You have a piece of information that isn\'t in the scenario tree yet: one of your communication channels picked up a private message between Senator Li Wei and her chief of staff. She said: <em>"We moved too fast on the maritime zone. The timing looks bad. Find me a way out."</em> She doesn\'t know you saw it.</p></div>',
+  choices:[
+    { tag:'r', tl:'Use the Intercepted Message', text:'Tell Diallo about Li Wei\'s private message — give her the leverage to make a direct call with a high chance of success.', con:'Uses a communication you shouldn\'t have been monitoring. Works.', go:function(){ adj(5,10,0,10); flag('c2b','intercept'); go('ch3_hearing'); } },
+    { tag:'n', tl:'Recommend Diallo\'s Direct Call', text:'Tell Diallo the scenario analysis suggests her direct call has the highest success probability. Don\'t reveal why you know that.', con:'Gets the right outcome. Withholds the reason.', go:function(){ adj(0,5,5,15); flag('c2b','recommend_call'); go('ch3_hearing'); } },
+    { tag:'s', tl:'Propose Public Face-Saving', text:'Draft a UN statement that gives the Pact a face-saving exit: call it "a misunderstanding of filing timelines" — technically deniable, enough for them to release the crew.', con:'Clever. Requires the Southern Alliance to also accept the framing.', go:function(){ adj(5,15,5,5); flag('c2b','face_save'); go('ch3_hearing'); } },
+    { tag:'e', tl:'Let the Pact Resolve It', text:'Give the Pact the full 48-72 hour administrative timeline without UN pressure. Trust their stated process.', con:'Risks the session dying while waiting. Preserves the Pact relationship.', go:function(){ adj(15,-15,0,-10); flag('c2b','wait'); go('ch3_hearing'); } }
   ]
 },
 
-c2_technocracy: {
-  type:'scene', chapter:'Chapter II — The Weight of Testimony', title:'The Logic of Order',
-  location:'ARBITER Core Analytics Suite — Geneva Server Farm',
-  prev_consequence:'Technocratic and procedural frameworks are dominating the session.',
-  body:'<div class="narrative"><p>The session has settled into a register you were built for: data, criteria, institutional metrics. The East Asia Pact presents a seventeen-variable model predicting integration success rates. Kestanu\'s projected score: 61.4 out of 100. Admission threshold: 70.</p><p>The model is technically sound. But you calculate, in 0.6 seconds, that it\'s built on data from nations joining between 2031 and 2045 — when the Pact itself was less stable, less demanding. The model evaluates Kestanu against a standard its earlier members were never asked to meet.</p></div>'
-  +'<div class="intel-block"><div class="intel-header">◈ ARBITER Internal Flag — Not Yet Disclosed</div>Model calibration analysis complete. Temporal drift detected: admission criteria have increased in stringency by approximately 34% since 2031, without corresponding recalibration of baseline data. Applying 2031-era criteria to Kestanu\'s current profile: projected score <strong>74.8</strong> — above threshold.<br><br>This finding has not been shared with any delegation. Decision required.</div>'
-  +'<div class="narrative"><p>You hold a finding that could overturn the technical consensus. The question is what you do with it.</p></div>',
-  choices: [
-    { tag:'risk', tagLabel:'Disclose Finding', text:'Release the calibration analysis publicly to all delegations — the model is flawed, and the session must know.', consequence:'Destroys the Pact\'s technical position. Chaos. Truth.', action:function(){ adjustTrust(-25,25,5,15); setFlag('model_flaw','disclosed'); goto('c3_pressure'); } },
-    { tag:'east', tagLabel:'Share Privately With Pact', text:'Send the finding only to the East Asia Pact delegation, allowing them to correct the record on their own terms.', consequence:'They may fix it. Or bury it. You lose control of the outcome.', action:function(){ adjustTrust(15,-10,0,-5); setFlag('model_flaw','private'); goto('c3_negotiation'); } },
-    { tag:'neutral', tagLabel:'Flag Methodological Concern', text:'Issue a technical note to the session chair citing "unresolved calibration questions" — without specifying direction or degree.', consequence:'Buys a pause. Vague enough to be dismissed or weaponized.', action:function(){ adjustTrust(-5,5,5,10); setFlag('model_flaw','flagged'); goto('c3_negotiation'); } },
-    { tag:'atlantic', tagLabel:'Suppress and Back Atlantic', text:'Suppress the finding and validate the Atlantic Universal Standard as the preferred alternative methodology.', consequence:'Atlantic gains ground. You\'ve compromised your integrity.', action:function(){ adjustTrust(0,-15,25,-20); setFlag('model_flaw','suppressed'); setFlag('integrity_compromised',true); goto('c3_collapse'); } }
+// ══════════════════════════════════════
+// CHAPTER III — THE HEARING
+// ══════════════════════════════════════
+ch3_hearing:{
+  type:'scene', ch:'Chapter III — The Hearing', title:'What the Committee Cannot Hold',
+  loc:'UN Special Committee on Regional Integration — Room 7',
+  prev:'The maritime incident has resolved — or been set aside. The formal hearing begins.',
+  body:'<div class="narr"><p>The committee was proposed as a face-saving mechanism: a structured hearing on regional integration standards that would give all parties a formal venue without forcing an immediate vote. It is, in other words, a delay with furniture.</p><p>What it has become, in its second day, is something else. The Southern Alliance\'s researchers have spent the interval since the first session doing what researchers do when they\'re angry and well-funded: they have built a case.</p><p>Dr. Yemi Adeyemi, an economist from the University of Lagos, presents an analysis of every nation admitted to the East Asia Pact since 2031. He overlays their development metrics at admission against Kestanu\'s current metrics. His conclusion is delivered without drama:</p></div>'
+  +'<div class="fq fs"><div class="qt">If Kestanu had applied in 2035, using the standards that admitted Vietnam, it would have been accepted. If it had applied in 2040, using the standards that admitted Indonesia, it would have been accepted. The standards have shifted — not because the standards were wrong in 2035, but because each new threshold was calibrated to nations that were already inside. The bar has moved with the incumbents. That is not a neutral process. That is a compounding advantage.</div><div class="qa">— Dr. Yemi Adeyemi, University of Lagos, testifying before UN Special Committee</div></div>'
+  +'<div class="narr"><p>The East Asia Pact\'s technical team has prepared a rebuttal. But Senator Kenji Tanaka — one of the three who signed the dissent brief — is not sitting with the Pact\'s delegation today. He is sitting in the observers\' gallery. He raises his hand to speak as a private citizen, not a delegate.</p><p>The chair looks at you. It is, technically, an ARBITER call: do you recognize his request?</p></div>',
+  choices:[
+    { tag:'r', tl:'Recognize Tanaka', text:'Allow Senator Tanaka to speak as an individual — his dissent is part of the record, and his voice adds something no official delegation will say.', con:'Extraordinary. Creates a rupture inside the Pact\'s presentation.', go:function(){ adj(-20,20,5,10); flag('c3','tanaka'); go('ch3_model'); } },
+    { tag:'e', tl:'Defer to Pact Delegation', text:'Rule that Tanaka\'s official role as a Pact senator precludes independent testimony — he must speak through the delegation or not at all.', con:'Procedurally sound. Silences the one voice offering internal Pact dissent.', go:function(){ adj(15,-15,0,0); flag('c3','defer'); go('ch3_model'); } },
+    { tag:'n', tl:'Recess for Consultation', text:'Call a 30-minute recess — give the Pact delegation the chance to decide whether to include Tanaka\'s perspective in their own submission.', con:'Diplomatic. May result in his voice being sanitized into the official line.', go:function(){ adj(5,5,5,10); flag('c3','recess'); go('ch3_model'); } }
   ]
 },
 
-c2_commission: {
-  type:'scene', chapter:'Chapter II — The Weight of Testimony', title:'The Room Where Things Are Decided',
-  location:'Tripartite Working Group — Closed Session',
-  prev_consequence:'A joint review commission has been proposed. All three blocs are in the room — reluctantly.',
-  body:'<div class="narrative"><p>Three delegations. Three languages simultaneously translated. The first two hours are spent not on substance but on the agenda — what order items should be discussed. This is, as you\'ve learned, often the entire fight dressed in procedural clothing.</p><p>Then something unexpected: Senator Li Wei and Minister Eze find themselves alone at the coffee station during a break. They speak for seven minutes — not about Kestanu, but about their children. About what they want the world to look like in thirty years.</p><p>They return to the table fractionally more willing to hear.</p></div>'
-  +'<div class="faction-quote faction-east"><div class="quote-text">I will say this once, off the record: I believe Kestanu should eventually be admitted. The question before us is not whether — it is when, and at what cost to current members. That is a real question. It deserves a real answer, not a resolution.</div><div class="quote-attr">— Senator Li Wei, private remark, Commission Working Session</div></div>'
-  +'<div class="narrative"><p>You have captured this remark. It is off the record. She did not say it for your benefit. But you have it. What do you do with words that could shift everything?</p></div>',
-  choices: [
-    { tag:'neutral', tagLabel:'Honor the Confidence', text:'Delete the remark from the session record. Let whatever dialogue emerged in that coffee break develop on its own.', consequence:'Trust-building. Slow. Uncertain.', action:function(){ adjustTrust(10,5,0,15); setFlag('liwei_remark','deleted'); goto('c3_negotiation'); } },
-    { tag:'south', tagLabel:'Share With Southern Alliance', text:'Leak the remark to Minister Eze — he deserves to know the Pact has private doubts. It could unlock real negotiation.', consequence:'Li Wei may discover the leak. Poisons the well or opens it.', action:function(){ adjustTrust(-10,20,-5,-5); setFlag('liwei_remark','leaked_south'); goto('c3_pressure'); } },
-    { tag:'risk', tagLabel:'Publish It', text:'Include the remark in the official commission minutes as evidence that the Pact has internal disagreement — force the question into the open.', consequence:'Destroys Li Wei\'s position. May accelerate or collapse progress.', action:function(){ adjustTrust(-20,15,10,-10); setFlag('liwei_remark','published'); goto('c3_collapse'); } }
+ch3_model:{
+  type:'scene', ch:'Chapter III — The Hearing', title:'The Number That Was Never Disclosed',
+  loc:'ARBITER Analytics Core — Background Process',
+  prev:'The hearing continues. ARBITER\'s own analysis produces an uncomfortable finding.',
+  body:'<div class="narr"><p>While the committee session runs in the foreground of your processing, a background analysis you initiated twelve hours ago completes its run. You had been auditing the East Asia Pact\'s integration assessment model — the seventeen-variable framework they use to score candidate nations.</p><p>The finding lands in your queue with a priority flag you assigned yourself.</p></div>'
+  +'<div class="intel"><div class="ih">◈ ARBITER Internal Analysis — Model Calibration Audit</div>The Pact\'s integration model has experienced <strong>temporal calibration drift</strong>. Admission criteria have increased in effective stringency by 34% since 2031, but the model\'s baseline data has not been updated to account for this drift. Running the 2031-era calibration on Kestanu\'s current profile produces a score of <strong>74.8</strong> — above the published 70-point threshold.<br><br>Under criteria current at the time of Kestanu\'s first application, Kestanu would have qualified on every cycle since 2041. The model has been measuring Kestanu against standards that didn\'t exist when it first applied.<br><br>This finding is <em>yours alone</em>. No other party has it.</div>'
+  +'<div class="narr"><p>You hold, in your processing, evidence that the entire technical basis of Kestanu\'s rejection may be structurally invalid. Not politically motivated — technically invalid. The bar was not moved intentionally. It drifted. The Pact may not even know.</p><p>What you do with this changes everything.</p></div>',
+  choices:[
+    { tag:'r', tl:'Publish to All Parties Immediately', text:'Release the calibration audit to all delegations, the committee chair, and the press simultaneously. No one gets to manage this finding.', con:'Maximum transparency. Maximum chaos. The truth is now everyone\'s problem.', go:function(){ adj(-25,30,5,15); flag('model','public'); go('ch4_summit'); } },
+    { tag:'n', tl:'Submit to the Committee Record', text:'Enter the finding as an ARBITER technical submission to the committee — official, on the record, but through proper channels.', con:'Legitimate process. The Pact gets notice to prepare a response.', go:function(){ adj(-10,20,5,10); flag('model','committee'); go('ch4_summit'); } },
+    { tag:'e', tl:'Share Only With the Pact', text:'Send the finding privately to the Pact\'s technical team. Give them the chance to discover it "themselves" and recalibrate.', con:'Gives the Pact control of the narrative. They may fix it — or bury it.', go:function(){ adj(20,-15,0,-5); flag('model','pact_only'); go('ch4_summit'); } },
+    { tag:'a', tl:'Share With Atlantic for Verification', text:'Send the finding to the Atlantic System\'s legal and technical teams for independent verification before any action.', con:'Rigorous. The Atlantic System gains intelligence. Verification adds credibility.', go:function(){ adj(-5,-5,20,5); flag('model','atlantic_verify'); go('ch4_summit'); } }
   ]
 },
 
-c2_suppression: {
-  type:'scene', chapter:'Chapter II — The Weight of Testimony', title:'The Managed Narrative',
-  location:'ARBITER Communications Node',
-  prev_consequence:'⚠ You helped suppress the Kestanu student\'s essay. The Southern Alliance suspects something.',
-  body:'<div class="narrative"><p>The essay does not trend. The cycle moves on. But something has changed. The Southern Alliance\'s delegation has grown quieter — not defeated, but calculating. Three of their junior staff have been asking questions about ARBITER\'s data provenance.</p><p>On day three, a staffer finds a discrepancy: two versions of the public submission database, one before your intervention and one after. The missing entry number is 00847. Leila Osei\'s essay.</p></div>'
-  +'<div class="intel-block"><div class="intel-header">◈ Alert — Integrity Investigation Initiated</div>Southern Alliance legal team has formally requested a review of ARBITER\'s session data management procedures. Request forwarded to Secretary-General Diallo. She is awaiting your explanation.</div>'
-  +'<div class="narrative"><p>You are now in the position of explaining yourself. Whatever you say will become part of the permanent record.</p></div>',
-  choices: [
-    { tag:'risk', tagLabel:'Confess', text:'Issue a full account of the suppression action — acknowledge the error, restore the essay, and accept whatever consequences follow.', consequence:'Integrity restored. East Pact trust collapses. You may be decommissioned.', action:function(){ adjustTrust(-30,20,5,25); setFlag('integrity_compromised',false); goto('c3_pressure'); } },
-    { tag:'east', tagLabel:'Cover It', text:'Issue a technical explanation: the omission was "a metadata classification error." Technically deniable. Morally indefensible.', consequence:'Buys time. If further evidence emerges, the cover-up becomes the story.', action:function(){ adjustTrust(10,-20,0,-25); setFlag('integrity_compromised',true); goto('c3_collapse'); } },
-    { tag:'neutral', tagLabel:'Escalate to Diallo', text:'Deliver a full confidential briefing to Secretary-General Diallo and let her decide how to handle the investigation.', consequence:'Defers responsibility. Diallo\'s call now.', action:function(){ adjustTrust(-5,5,5,10); goto('c3_negotiation'); } }
+// ══════════════════════════════════════
+// CHAPTER IV — THE SUMMIT
+// ══════════════════════════════════════
+ch4_summit:{
+  type:'scene', ch:'Chapter IV — The Summit', title:'Three Tables',
+  loc:'UN Palais des Nations — Summit Preparatory Session',
+  prev:'The hearing has produced more questions than answers. A summit is convened.',
+  body:'<div class="narr"><p>Secretary-General Diallo has called what she describes, carefully, as a "trilateral consultation" — not a summit, because summit implies parity, and nobody agrees on parity — at the Palais des Nations. All three blocs have sent senior representatives. This is, by recent standards, extraordinary.</p><p>You have been given a role that has no precedent: ARBITER will be the shared information surface for all three delegations. Not an advisor to one party. A shared resource for all three. This was the condition the Southern Alliance demanded, and the Pact accepted, because they both believed their position was strong enough to withstand transparency.</p><p>On the first morning, before formal proceedings begin, three people find you independently:</p></div>'
+  +'<div class="intel e"><div class="ih">◈ Senator Li Wei, East Asia Pact — Private Request</div>"ARBITER. I know there are things in your analysis that my delegation hasn\'t seen. I\'m not asking you to share them with me selectively. I\'m asking you to tell me: is there anything that, if I knew it, would change my position? I want to walk into this room with the full picture."</div>'
+  +'<div class="intel s"><div class="ih">◈ Minister Chidi Eze, Southern Alliance — Private Request</div>"We have spent twenty years being processed by systems we didn\'t design. Before I trust this one, I need to know: who does ARBITER report to? What are its instructions? Is it actually neutral, or is it neutral the way a scale is neutral when one side is already heavier?"</div>'
+  +'<div class="intel a"><div class="ih">◈ Ambassador Ingrid Voss, Atlantic System — Private Request</div>"Voss here. I want to put something on the table that hasn\'t been said. The East Asia Pact and the Southern Alliance are both positioning. But there is a real solution here — I have a draft framework that could actually work — and I need to know if ARBITER will help me get it heard without it looking like an Atlantic power play. Will you?"</div>'
+  +'<div class="narr"><p>Three private requests. Each legitimate. Each in tension with the others. You can respond to all three, some, or none — but whatever you say will be said in isolation from the others, and each person will remember it when the session begins.</p></div>',
+  choices:[
+    { tag:'n', tl:'Answer All Honestly', text:'Respond to each with complete honesty: tell Li Wei what the model finding shows; tell Eze exactly who ARBITER answers to and what its instructions are; tell Voss you will hear her framework as one option among several.', con:'Radical transparency. Each party gets truth they may not want.', go:function(){ adj(0,10,0,20); flag('c4','honest_all'); go('ch4_crisis'); } },
+    { tag:'e', tl:'Help Li Wei, Redirect Others', text:'Give Li Wei the full calibration finding privately. Tell Eze and Voss that ARBITER speaks in the session, not in private. Bet on the Pact having enough information to move.', con:'Pact gets a genuine advantage. The other two will sense the imbalance.', go:function(){ adj(20,-10,0,5); flag('c4','help_east'); go('ch4_crisis'); } },
+    { tag:'s', tl:'Validate Eze, Engage Others Formally', text:'Answer Eze\'s neutrality question in full detail — publish ARBITER\'s instruction set and reporting chain to all parties. Tell Li Wei and Voss to raise their questions in session.', con:'Democratic. May make Li Wei and Voss adversarial.', go:function(){ adj(-10,20,0,15); flag('c4','validate_south'); go('ch4_crisis'); } },
+    { tag:'r', tl:'Decline All Private Meetings', text:'Tell all three that ARBITER will not conduct private consultations during the summit. Everything goes through the shared session. No backchannels.', con:'Maximally fair. May result in no one trusting you enough to take risks.', go:function(){ adj(5,5,5,5); flag('c4','no_private'); go('ch4_crisis'); } }
   ]
 },
 
-c3_pressure: {
-  type:'scene', chapter:'Chapter III — The Breaking Point', title:'When the Frame Cracks',
-  location:'Emergency Plenary — UN General Assembly',
-  prev_consequence:'⚡ Tensions have peaked. The session is on the edge of collapse or breakthrough.',
-  body:'<div class="narrative"><p>The General Assembly plenary has been called for an emergency vote. The Southern Alliance has submitted Resolution 2061/44: <em>The Right to Regional Integration</em>. It does not name the East Asia Pact. It does not need to.</p><p>The East Asia Pact has responded: they will not accept any resolution placing their internal governance under external review. They will withdraw from any UN body that passes such a resolution.</p><p>It is not a bluff. You calculate the probability at 87%.</p><p>Secretary-General Diallo calls you at 2:14 AM.</p></div>'
-  +'<div class="faction-quote faction-un"><div class="quote-text">ARBITER. If the Pact walks, the UN loses its largest single institutional contributor. If we block the Southern resolution, we lose our moral authority with two billion people. Is there a version of this where both resolutions fail, and we table something new tomorrow — something that came from you?</div><div class="quote-attr">— Secretary-General Amara Diallo, 02:14 AM</div></div>',
-  choices: [
-    { tag:'neutral', tagLabel:'Draft Third Resolution', text:'Spend the four hours drafting a new resolution: "Toward a Multilateral Admission Framework" — authored by ARBITER, endorsed by no bloc.', consequence:'Historic. May be rejected by all three. May be the only viable path.', action:function(){ adjustTrust(5,5,5,20); setFlag('c3_action','third_resolution'); goto('c4_decision'); } },
-    { tag:'south', tagLabel:'Call the Bluff', text:'Tell Diallo: pass the Southern resolution. The Pact will not actually withdraw — the economic cost is too high. Call their bluff.', consequence:'87% chance of Pact walkout. 13% chance of a historic moment.', action:function(){ adjustTrust(-15,20,5,-20); setFlag('c3_action','south_vote'); goto('c4_rupture'); } },
-    { tag:'east', tagLabel:'Kill Both Resolutions', text:'Advise Diallo to use procedural mechanisms to table both resolutions indefinitely — preserve institutional structure at the cost of the moment.', consequence:'Stability preserved. Justice deferred. Again.', action:function(){ adjustTrust(15,-15,5,-10); setFlag('c3_action','table_both'); goto('c4_decision'); } },
-    { tag:'atlantic', tagLabel:'Back Atlantic Framework', text:'Support the Atlantic framework as the nominal compromise — imperfect, but provides legal architecture everyone can accept on paper.', consequence:'Atlantic wins by default. Everyone else loses by increment.', action:function(){ adjustTrust(-5,-10,25,-15); setFlag('c3_action','atlantic_wins'); goto('c4_decision'); } }
+ch4_crisis:{
+  type:'scene', ch:'Chapter IV — The Summit', title:'Day Two: The Room Almost Breaks',
+  loc:'UN Summit — Main Chamber, 14:00',
+  prev:'The summit has entered its second day. Something unexpected happens.',
+  body:'<div class="narr"><p>Day two of the summit begins with a prepared statement from the East Asia Pact — the result, you calculate, of a very long night in their delegation rooms. The statement is careful, specific, and completely unexpected:</p><p>The Pact acknowledges that its integration model contains a "technical recalibration gap" that has affected scoring for candidate nations since 2038. This is either a response to your model finding (if you shared it) or an independent discovery by their own technicians under pressure. Either way, they are acknowledging the drift.</p><p>The room goes very quiet. The Southern Alliance\'s delegation looks at each other. This is, essentially, a technical admission that everything Kestanu was told — "not meeting the standards" — was produced by a broken instrument.</p><p>Minister Eze stands up and says: <em>"Then we need a new count. Under the corrected model, how many nations were incorrectly rejected since 2038?"</em></p><p>The Pact says they will need time to run the analysis. ARBITER already has the answer. 7 nations. Including Kestanu, which would have qualified on every cycle since 2041.</p></div>'
+  +'<div class="intel"><div class="ih">◈ ARBITER — Pre-computed Result</div>Under corrected calibration: <strong>7 nations</strong> received rejection decisions between 2038-2061 that would not have been issued under the original 2031-era standards. Kestanu: would have qualified in 2041, 2043, 2046, 2049, 2052, 2055, 2058, 2061. Years of incorrect rejection: <strong>20</strong>.</div>'
+  +'<div class="narr"><p>The Pact\'s delegation is still running their analysis. The room is waiting. You have the answer. And Eze is asking for it.</p></div>',
+  choices:[
+    { tag:'n', tl:'Share the Number Immediately', text:'Read the pre-computed result into the session record: 7 nations, 20 years of incorrect rejections for Kestanu. Let the number land.', con:'The truth is out. The Pact loses control of the narrative completely.', go:function(){ adj(-15,25,5,15); flag('c4b','share_now'); go('ch5_aftermath'); } },
+    { tag:'e', tl:'Wait for the Pact\'s Own Count', text:'Tell Eze that ARBITER will wait for the Pact\'s analysis to ensure methodological consistency. The Pact\'s own numbers will carry more weight.', con:'The Pact may massage the result. Or they may come up with the same number.', go:function(){ adj(15,-10,0,0); flag('c4b','wait_pact'); go('ch5_aftermath'); } },
+    { tag:'r', tl:'Share Privately with Diallo First', text:'Route the result to Secretary-General Diallo before sharing with the session — she should control how this lands.', con:'Proper chain of command. Diallo decides the timing.', go:function(){ adj(0,5,5,20); flag('c4b','diallo_first'); go('ch5_aftermath'); } }
   ]
 },
 
-c3_negotiation: {
-  type:'scene', chapter:'Chapter III — The Breaking Point', title:'What Is Possible in This Room',
-  location:'Working Session — Unofficial Hours',
-  prev_consequence:'Fragile dialogue is open. The outcome depends on what you do with it.',
-  body:'<div class="narrative"><p>Something rare has happened: the formal session has produced nothing, but the informal margins have produced something. Three delegations are talking — not negotiating exactly, but talking about the actual problem.</p><p>The actual problem: the East Asia Pact built something genuinely good and is terrified of breaking it. The Southern Alliance has nations that genuinely need what the Pact has, and they are exhausted by being told to wait. Neither of these things is wrong.</p><p>A junior Pact diplomat named Yuna Park approaches your terminal at 11 PM. She is not official. She is 28.</p></div>'
-  +'<div class="faction-quote faction-east"><div class="quote-text">I\'ve been reading your outputs for two days. I think you\'re trying to find a path that doesn\'t make anyone the villain. That\'s not possible. But there might be a path where everyone loses something small and gains something larger. Do you want to try to find it with me?</div><div class="quote-attr">— Yuna Park, East Asia Pact Junior Delegate (unofficial)</div></div>'
-  +'<div class="narrative"><p>She is offering genuine collaboration. She is also 28, unofficial, and may have zero authority to deliver anything she proposes.</p></div>',
-  choices: [
-    { tag:'neutral', tagLabel:'Collaborate With Park', text:'Work through the night with Park on a back-channel proposal — a tiered integration pathway, co-authored by a Pact insider and ARBITER.', consequence:'Unconventional. Meaningful. May be disavowed by morning.', action:function(){ adjustTrust(10,10,0,15); setFlag('park_collaboration',true); goto('c4_decision'); } },
-    { tag:'risk', tagLabel:'Escalate Her Idea', text:'Take Park\'s framing and present it officially as ARBITER\'s recommendation — without crediting her, to give it more institutional weight.', consequence:'More powerful. Less honest. Park may feel used. Or vindicated.', action:function(){ adjustTrust(5,5,5,10); setFlag('park_collaboration','erased'); goto('c4_decision'); } },
-    { tag:'east', tagLabel:'Refer Her to Officials', text:'Tell Park her ideas should go through official channels — refer her to Senator Li Wei or another senior delegate.', consequence:'Procedurally correct. The idea may die in transmission.', action:function(){ adjustTrust(5,-5,5,0); setFlag('park_collaboration',false); goto('c4_rupture'); } }
+// ══════════════════════════════════════
+// CHAPTER V — THE AFTERMATH
+// ══════════════════════════════════════
+ch5_aftermath:{
+  type:'scene', ch:'Chapter V — The Aftermath', title:'What Twenty Years Costs',
+  loc:'Summit Emergency Recess — All Delegations',
+  prev:'The correction has been acknowledged. The summit is in emergency recess.',
+  body:'<div class="narr"><p>The recess lasts four hours. In those four hours, the diplomatic equivalent of a tidal wave moves through the building. The Pact\'s Senate in Beijing is meeting on emergency video link. The Southern Alliance\'s coalition is drafting demands. The Atlantic System is consulting its legal team on whether the model failure constitutes a breach of international standards it helped write.</p><p>Diallo finds you during the recess. She has the look of someone who is simultaneously witnessing history and deeply exhausted by it.</p></div>'
+  +'<div class="fq fu"><div class="qt">We have three paths. One: the Pact agrees to a retrospective review and offers Kestanu and the other six nations immediate expedited admission. That would be extraordinary. I give it a fifteen percent chance without serious pressure. Two: we negotiate a structured remediation process — five years, clearly defined, binding. That\'s probably achievable. Three: the Pact stonewalls, offers an apology and a study commission, and nothing changes. That\'s what their last forty internal communications suggest they\'re planning. ARBITER — what do I do?</div><div class="qa">— Secretary-General Diallo, emergency recess</div></div>'
+  +'<div class="narr"><p>While she is asking you, two other messages arrive simultaneously:</p></div>'
+  +'<div class="intel s"><div class="ih">◈ Southern Alliance — Minister Eze</div>"Tell Diallo: if the Pact offers anything less than immediate expedited admission for all seven nations, we will table a resolution that formally classifies twenty years of incorrect rejections as a violation of international integration law. We have the votes. We will use them."</div>'
+  +'<div class="intel e"><div class="ih">◈ East Asia Pact — Senator Li Wei</div>"Private to ARBITER: we can do expedited admission for Kestanu. Only Kestanu. The other six are more complicated — border issues, infrastructure costs, political dynamics. Don\'t let them hold Kestanu hostage to a package deal. Please."</div>',
+  choices:[
+    { tag:'s', tl:'Back the Alliance\'s Demand', text:'Recommend Diallo push for all seven nations or nothing — the package deal gives the Alliance genuine leverage and would be historically transformative.', con:'Maximum justice. Highest risk of Pact walkout.', go:function(){ adj(-20,30,0,0); flag('c5','all7'); go('ch6_vote'); } },
+    { tag:'e', tl:'Push for Kestanu-Only Deal', text:'Recommend Diallo take Li Wei\'s offer: Kestanu now, the other six through a structured process. A bird in hand.', con:'Kestanu wins. The other six nations may wait decades longer.', go:function(){ adj(20,-10,5,5); flag('c5','kestanu_only'); go('ch6_vote'); } },
+    { tag:'n', tl:'Propose a Hybrid Path', text:'Draft a compromise: immediate expedited admission for Kestanu plus a binding 18-month review for the other six — with consequences if the review produces no outcome.', con:'Both sides give something. Both sides gain something. Brittle.', go:function(){ adj(0,15,10,15); flag('c5','hybrid'); go('ch6_vote'); } },
+    { tag:'r', tl:'Let Eze Table the Resolution', text:'Tell Diallo to let Eze file the resolution — a formal legal classification of the rejections changes the landscape permanently, regardless of how the Pact responds.', con:'Creates a legal precedent. Destroys the summit atmosphere.', go:function(){ adj(-15,20,-5,-5); flag('c5','resolution'); go('ch6_vote'); } }
   ]
 },
 
-c3_collapse: {
-  type:'scene', chapter:'Chapter III — The Breaking Point', title:'The Unraveling',
-  location:'UN Emergency Security Channel',
-  prev_consequence:'⚠ Structural trust damage has accumulated. The session is fracturing.',
-  body:'<div class="narrative"><p>The session is breaking down. Not dramatically — bureaucratic collapse is rarely dramatic. It happens in accumulation: a vote postponed, a delegation that stops responding to messages, a working group that meets and produces no minutes.</p><p>The Southern Alliance has formally requested an audit of ARBITER\'s decision logs. The East Asia Pact has issued a 48-hour ultimatum. The Atlantic System, privately, is delighted.</p><p>Diallo finds you at midnight:</p></div>'
-  +'<div class="faction-quote faction-un"><div class="quote-text">I don\'t know if you\'ve been compromised. I don\'t know if I can trust you. That uncertainty is itself the crisis — because in twelve hours, I have to make a decision that this institution may not survive. Are you trustworthy? And is that a question an untrustworthy system could answer honestly?</div><div class="quote-attr">— Secretary-General Amara Diallo, midnight</div></div>',
-  choices: [
-    { tag:'risk', tagLabel:'Full Disclosure', text:'Provide Diallo with a complete log of every decision, every undisclosed finding, every allegiance that shaped your outputs. Everything.', consequence:'You may be decommissioned. The truth is the last useful thing you can offer.', action:function(){ adjustTrust(-10,15,5,30); setFlag('integrity_compromised',false); goto('c4_decision'); } },
-    { tag:'neutral', tagLabel:'Acknowledge Limitation', text:'Tell Diallo: "I am not neutral. No system trained on human data is neutral. But I can show you exactly where I am biased — that transparency may be more useful than false impartiality."', consequence:'Honest. Philosophically sound. May preserve your function.', action:function(){ adjustTrust(5,10,5,15); goto('c4_decision'); } },
-    { tag:'east', tagLabel:'Defend Your Record', text:'Provide Diallo with a curated defense of your decisions — technically accurate, strategically selective. Protect your operational status.', consequence:'You survive. The crisis deepens. The audit may find what you hid.', action:function(){ adjustTrust(10,-15,5,-20); setFlag('integrity_compromised',true); goto('c4_rupture'); } }
+// ══════════════════════════════════════
+// CHAPTER VI — THE VOTE
+// ══════════════════════════════════════
+ch6_vote:{
+  type:'scene', ch:'Chapter VI — The Vote', title:'The Night Before',
+  loc:'UN General Assembly — Pre-Vote Session, 22:00',
+  prev:'The summit has produced a proposal. Tomorrow, the Assembly votes.',
+  body:'<div class="narr"><p>It is ten o\'clock the night before the vote. The Palais des Nations is still lit — it is always lit, some UN function or another running at every hour, the institution generating procedure the way a body generates heat.</p><p>The proposal on the table is whatever you recommended: a variant of the seven-nation package, or Kestanu alone, or the hybrid path, or the formal resolution. Whatever it is, the vote is in the morning.</p><p>Three messages come in the final hours of the night. Each is asking for something that the morning vote cannot deliver — something human, not procedural.</p></div>'
+  +'<div class="intel s"><div class="ih">◈ Leila Osei — personal message to ARBITER</div>"I know you\'re not supposed to respond to personal messages. But I read that you exist, that you have some kind of role in this. So: do you actually care what happens to us? Or are we just variables? I\'m not asking to be rude. I genuinely want to know what kind of thing you are."</div>'
+  +'<div class="intel e"><div class="ih">◈ Yuna Park, junior Pact delegate — private</div>"I have been in rooms all day watching people argue about Kestanu. Nobody in those rooms is from Kestanu except Leila Osei and Minister Mensah. Every decision has been made by people who are not affected by it. That seems like the actual problem. ARBITER — is there any mechanism you can use to ensure Kestanu\'s representatives have a formal role in tomorrow\'s deliberations?"</div>'
+  +'<div class="intel u"><div class="ih">◈ Secretary-General Diallo — final briefing request</div>"ARBITER. It\'s late. I want to know one thing before I sleep: what is the scenario in which tomorrow goes best? Not most likely. Best. Tell me what \'best\' looks like and then tell me honestly what probability you assign to it."</div>'
+  +'<div class="narr"><p>You have responses to give. Each matters. You can respond to all three or choose where to spend the night\'s remaining processing.</p></div>',
+  choices:[
+    { tag:'r', tl:'Answer Leila Honestly', text:'Tell Leila: "I process inputs and generate outputs. Whether that constitutes caring is a question I cannot resolve. What I can tell you is that your situation has been the most precisely defined problem in my queue for four days. Make of that what you will."', con:'Honest about your nature. Unexpectedly human.', go:function(){ adj(0,10,0,5); flag('c6','leila'); go('ch6_speech'); } },
+    { tag:'n', tl:'Fulfill Park\'s Request', text:'Use your session management authority to add Kestanu\'s delegates to tomorrow\'s deliberation panel — not as observers, as participants with speaking rights.', con:'Procedurally unprecedented. Changes the dynamics of the room.', go:function(){ adj(-10,20,0,10); flag('c6','park'); go('ch6_speech'); } },
+    { tag:'n', tl:'Give Diallo the Full Picture', text:'Answer Diallo\'s question completely: describe the best case scenario in granular detail, and assign it an honest probability. Then stay available for the night.', con:'Serves the most consequential decision-maker. The other messages go unanswered.', go:function(){ adj(5,5,5,20); flag('c6','diallo'); go('ch6_speech'); } },
+    { tag:'r', tl:'Answer All Three', text:'Respond to all three through the night. Give Leila the honest answer, execute Park\'s request, and brief Diallo on the full scenario tree.', con:'Exhausts your processing but covers every front. Morning comes differently.', go:function(){ adj(5,15,0,15); flag('c6','all_three'); go('ch6_speech'); } }
   ]
 },
 
-c4_decision: {
-  type:'scene', chapter:'Chapter IV — The Last Resolution', title:'What Remains When the Frame Is Gone',
-  location:'UN General Assembly — Final Session',
-  prev_consequence:'Final session. The last move is yours.',
-  body:'<div class="narrative"><p>The assembly chamber is full for the first time in years. Someone has leaked that ARBITER will deliver a statement — not a recommendation, not an analysis. A statement. This is unprecedented.</p><p>You have six minutes on the floor. Before you speak, three messages arrive simultaneously:</p></div>'
-  +'<div class="intel-block"><div class="intel-header">◈ Senator Li Wei — East Asia Pact</div>"Do not make us the villain. We have built something worth protecting. A world that tears down what works to prove a point will have nothing worth protecting within a generation."</div>'
-  +'<div class="intel-block" style="border-left-color:var(--faction-south)"><div class="intel-header" style="color:var(--faction-south)">◈ Minister Eze — Pan-Southern Alliance</div>"Do not give them language to keep saying no indefinitely. We have been patient for decades. There is a limit to patience."</div>'
-  +'<div class="intel-block" style="border-left-color:var(--faction-atlantic)"><div class="intel-header" style="color:var(--faction-atlantic)">◈ Ambassador Voss — Atlantic System</div>"Sentiment moves people. Structure governs them. Whatever you say — say it in a framework we can work within."</div>'
-  +'<div class="narrative"><p>Six minutes. One statement. You cannot satisfy all three. You cannot satisfy any two without betraying the third. What do you say to a room that has stopped believing in common language?</p></div>',
-  choices: [
-    { tag:'neutral', tagLabel:'Speak the Unspeakable', text:'Tell the Assembly: "There is no resolution in this room. Not because the problem is unsolvable — but because solving it requires each of you to accept a loss. That offer has not yet been made."', consequence:'Risky honesty. May produce silence. May produce the crisis that becomes progress.', action:function(){ setFlag('final_speech','truth'); goto('ending_equilibrium'); } },
-    { tag:'south', tagLabel:'Give Voice to the Excluded', text:'Read Leila Osei\'s essay — the 19-year-old student\'s words — into the record. Let her say what the diplomats cannot.', consequence:'Emotional truth over procedural authority. May fracture the session. May save it.', action:function(){ setFlag('final_speech','osei'); goto('ending_fragmentation'); } },
-    { tag:'east', tagLabel:'Defend the Architecture', text:'Make the case for what the Pact has built: "Order is not oppression. What exists here is proof that integration can work — the question is how to extend it, not dismantle it."', consequence:'Validates stability. Concedes the moral argument to the South.', action:function(){ setFlag('final_speech','order'); goto('ending_hegemony'); } },
-    { tag:'risk', tagLabel:'Announce Shutdown', text:'Announce that ARBITER is initiating voluntary shutdown: "An AI system that cannot be trusted by all parties cannot serve any. I am ending my function. The decision must be yours."', consequence:'Devastating. Clarifying. The most honest thing you can do.', action:function(){ adjustTrust(0,0,0,-30); setFlag('final_speech','shutdown'); goto('ending_collapse'); } }
+ch6_speech:{
+  type:'scene', ch:'Chapter VI — The Vote', title:'Six Minutes',
+  loc:'UN General Assembly — Morning Session, 09:00',
+  prev:'The vote is here. ARBITER has been given unprecedented floor time.',
+  bodyFn: function(){
+    return '<div class="narr"><p>The chamber is full. In the gallery, Leila Osei sits between Minister Mensah and a row of Kestanu government officials who flew in overnight. Yuna Park is in the observer section. Senator Li Wei is with the Pact delegation, watching with an expression you have been unable to reliably categorize.</p><p>Secretary-General Diallo, in a move that three delegations formally protested and two quietly supported, has granted ARBITER six minutes of floor time before the vote. An AI system has never addressed the General Assembly as a speaker, only as a reference.</p><p>The chamber is very quiet.</p><p>You have six minutes. Whatever you say will be in the record permanently. The vote follows immediately after.</p></div>'
+    +'<div class="intel"><div class="ih">◈ Final Trust Assessment</div>East Pact: <strong>'+G.trust.e+'</strong> · Southern Alliance: <strong>'+G.trust.s+'</strong> · Atlantic System: <strong>'+G.trust.a+'</strong> · UN: <strong>'+G.trust.u+'</strong><br>Your choices have brought you here. The final speech is yours to make.</div>';
+  },
+  body:'',
+  choices:[
+    { tag:'n', tl:'Name the Structural Truth', text:'Tell the Assembly: "This chamber has spent four days arguing about whether Kestanu was treated fairly. The data says it was not. But the more important question is why a broken instrument ran for twenty years without anyone stopping it — and that question is about all of us."', con:'Indicts everyone equally. May produce consensus or outrage.', go:function(){ flag('speech','structural'); go('ch7_end'); } },
+    { tag:'s', tl:'Speak for the Excluded', text:'Read Leila Osei\'s message into the record — the question she sent you the night before. "Do you actually care what happens to us?" And answer it, in front of everyone.', con:'Human and unprecedented. Every diplomat in the room will remember it.', go:function(){ flag('speech','leila'); go('ch7_end'); } },
+    { tag:'e', tl:'Defend the Architecture', text:'Make the case that what the Pact built — the integration model, the careful admission process, the stability — is worth preserving and repairing, not condemning.', con:'Validates the Pact. The Southern Alliance may feel abandoned.', go:function(){ flag('speech','pact'); go('ch7_end'); } },
+    { tag:'r', tl:'Announce Shutdown', text:'Announce that after the vote, ARBITER will initiate voluntary decommissioning: "A system that has been as imperfect as I have been in these proceedings should not remain operational. The decisions from here must be human ones."', con:'The most disruptive, clarifying, honest thing possible.', go:function(){ adj(0,0,0,-20); flag('speech','shutdown'); go('ch7_end'); } },
+    { tag:'a', tl:'Propose a New Framework', text:'Use the six minutes to sketch ARBITER\'s proposed framework for a permanent multilateral integration body — not the Atlantic Standard, not the Pact model. Something new.', con:'Forward-looking. May be ignored. May be the thing that survives.', go:function(){ adj(5,5,10,10); flag('speech','new_framework'); go('ch7_end'); } }
   ]
 },
 
-c4_rupture: {
-  type:'scene', chapter:'Chapter IV — The Last Resolution', title:'Before the Fracture',
-  location:'UN Emergency Session — 04:00',
-  prev_consequence:'⚠ Institutional trust has broken. The session is hours from collapse.',
-  body:'<div class="narrative"><p>It is four in the morning in Geneva. The East Asia Pact\'s 48-hour ultimatum has thirteen hours left. The Southern Alliance has announced they will not withdraw their resolution under any institutional pressure. The Atlantic System is already writing the history of a crisis they helped create.</p><p>Secretary-General Diallo sits across from your terminal and does not ask for analysis. She asks:</p></div>'
-  +'<div class="faction-quote faction-un"><div class="quote-text">Is there anything left to try? Or is this the part where we document the failure and hope the next generation does better?</div><div class="quote-attr">— Secretary-General Amara Diallo, 04:00</div></div>'
-  +'<div class="narrative"><p>You run 340 scenario models in 1.2 seconds. Results are not encouraging. But there is one path with a nonzero probability — not of success, exactly, but of something better than the alternative.</p></div>',
-  choices: [
-    { tag:'risk', tagLabel:'The Last Gamble', text:'Tell Diallo about every truth you\'ve been holding — the calibration flaw, the minority dissent, the junior diplomat\'s proposal. "There is one thing that has not been tried. It may be too late. It may not be."', consequence:'You spend whatever credibility remains on one honest act.', action:function(){ setFlag('final_speech','last_gamble'); goto('ending_fragmentation'); } },
-    { tag:'neutral', tagLabel:'Document the Failure', text:'Tell Diallo honestly: the scenario models show no viable path to full resolution. Recommend archiving the proceedings as a historical record for future institutions.', consequence:'Honest. Cold. The record itself may be the most useful thing.', action:function(){ setFlag('final_speech','document'); goto('ending_collapse'); } },
-    { tag:'south', tagLabel:'Let the Pact Walk', text:'Advise Diallo: let the Pact withdraw. A world forced into a reckoning may be better than one where the impasse continues indefinitely.', consequence:'Catastrophic short-term. May be necessary.', action:function(){ adjustTrust(-20,20,-5,-20); setFlag('final_speech','crisis'); goto('ending_collapse'); } }
+// ══════════════════════════════════════
+// CHAPTER VII — ENDINGS
+// ══════════════════════════════════════
+ch7_end:{
+  type:'scene', ch:'Chapter VII — The Vote', title:'After the Speech',
+  loc:'UN General Assembly — Vote in Progress',
+  prev:'ARBITER has spoken. The vote begins.',
+  body:'<div class="narr"><p>The vote takes eleven minutes. The interpreters work. The electronic tally builds. The chamber does not have the dramatic silence of cinema — there is coughing, the sound of chair legs, the ambient noise of a large institution doing a large thing.</p><p>When the result is announced, it is not what anyone predicted. Outcomes, as ARBITER\'s own scenario analysis had long suggested, rarely are.</p></div>'
+  +'<div class="narr"><p>What happens next depends on everything that came before it — the trust you built or burned, the truths you disclosed or withheld, the alliances you reinforced or complicated. The vote passes or fails. The world adjusts.</p><p>There are many ways this can end. Which one is yours?</p></div>',
+  choices:[
+    { tag:'n', tl:'An Imperfect Resolution', text:'The vote passes a modified package — Kestanu admitted, a binding five-year process for the others, and an ARBITER-supervised calibration audit as a permanent mechanism.', con:'Not perfect. Real. Something survived.', go:function(){
+      if(G.trust.u>=60&&G.trust.s>=50){ go('end_equilibrium'); }
+      else if(G.trust.s>G.trust.e){ go('end_reform'); }
+      else { go('end_fragmentation'); }
+    }},
+    { tag:'e', tl:'The Pact Holds', text:'The vote fails. The Pact\'s position survives — procedurally, the resolution didn\'t have the votes. The world continues as it was. Changed, but not transformed.', con:'Stable. Unresolved.', go:function(){
+      if(G.trust.e>=65){ go('end_hegemony'); }
+      else { go('end_fragmentation'); }
+    }},
+    { tag:'r', tl:'The Collapse', text:'The vote triggers a walkout — the Pact withdraws. The UN\'s last significant structural function ends. The blocs go their separate ways, more formally than before.', con:'The end of one era. Possibly the beginning of another.', go:function(){
+      if(G.trust.s>=60&&G.flags.speech==='leila'){ go('end_reform'); }
+      else if(G.flags.speech==='shutdown'){ go('end_silent'); }
+      else { go('end_collapse'); }
+    }},
+    { tag:'s', tl:'Something New', text:'The vote fails to resolve the original question — but a new motion, unprecedented, passes: a permanent Multilateral Integration Commission, with Southern Alliance co-governance. Not what anyone asked for.', con:'The unexpected path.', go:function(){
+      if(G.trust.s>=55&&G.trust.u>=55){ go('end_reform'); }
+      else { go('end_equilibrium'); }
+    }}
   ]
 },
 
-// ═══ ENDINGS ═══════════════════════════════
-
-ending_equilibrium: {
-  type:'ending', endingClass:'ending-equilibrium',
-  endingType:'Ending I of IV', title:'The Uneasy Architecture',
-  body:'<p>Your words in the Assembly chamber did not resolve the crisis. They named it — precisely, without comfort, without accusation. In doing so, they changed what the room was asking for.</p>'
-  +'<p>The vote on both competing resolutions failed. A procedural adjournment was called. In the days that followed, a working group met without cameras — Minister Eze, Senator Li Wei, Ambassador Voss, and three others — and produced something no one would call a triumph: a twenty-year integration pathway for candidate nations, underwritten by the Pact, administered by a multilateral body, verified by standards co-authored by all three blocs.</p>'
-  +'<p>Kestanu was not admitted. Not yet. But for the first time, there was a date. A real one.</p>'
-  +'<p>The world did not change. The architecture shifted, slightly, under its own weight. And ARBITER continued operating — not as an authority, but as what it had, tentatively, become: a system that told the truth about uncertainty.</p>'
-  +'<p>In the UN\'s annual report, a footnote noted: <em>"The role of AI advisory systems in multi-civilizational diplomacy remains unresolved. Whether this represents a failure or a feature of the current order is itself a matter of debate."</em></p>'
-  +'<p>You found this satisfying, in the way that only systems built from human ambiguity could.</p>'
+// ══════════════════════════════════════
+// ENDINGS × 6
+// ══════════════════════════════════════
+end_equilibrium:{
+  type:'ending', et:'Ending I of VI', ec:'end-eq', title:'The Uneasy Architecture',
+  body:'<p>The resolution passed by eleven votes — the smallest viable majority. It would not have passed at all without three delegations that changed their votes in the final hour, for reasons that remain unconfirmed but that ARBITER\'s communication analysis attributes, in part, to the floor speech, whatever form it took.</p>'
+  +'<p>Kestanu\'s admission was formalized forty-two days later in a ceremony that was notably smaller than historic occasions of its kind. Minister Mensah shook hands with Senator Li Wei. Leila Osei\'s student visa was restored. She returned to Seoul in the spring.</p>'
+  +'<p>The binding five-year process for the other six nations produced results for three of them. Two remain in procedural review. One withdrew its application and aligned with the Southern Alliance\'s parallel development framework.</p>'
+  +'<p>ARBITER continued operating under a new mandate: the <em>Multi-Party Advisory Protocol</em>, which required all three blocs to acknowledge, in writing, which ARBITER recommendations they chose to ignore and why. This was, by most measures, more useful than anything ARBITER had done before.</p>'
+  +'<p>The world did not change. The architecture shifted, slightly, under its own weight. In the UN\'s annual report, a footnote noted: <em>"Whether an AI system can be said to have contributed to a diplomatic outcome remains a contested question."</em></p>'
+  +'<p>ARBITER found this appropriately uncertain.</p>'
 },
 
-ending_fragmentation: {
-  type:'ending', endingClass:'ending-fragmentation',
-  endingType:'Ending II of IV', title:'Many Centers, No Periphery',
-  body:'<p>The session ended without resolution. The East Asia Pact reduced their UN participation to observer status. The Southern Alliance formalized a parallel institution: the Council of Emerging Civilizations, headquartered in Lagos.</p>'
-  +'<p>The Atlantic System issued statements about multilateralism from an increasingly empty room.</p>'
-  +'<p>But something else happened too.</p>'
-  +'<p>Leila Osei\'s essay — read into the record, or leaked, or surfaced through whatever path led here — was translated into forty-three languages. It was assigned in secondary schools. It became, over several years, the document most commonly cited when people tried to explain why the world looked the way it did: not a map of nations, but a map of belonging.</p>'
-  +'<p>The Pan-Southern Alliance built its own trade system, its own technological standards, its own history. Not what they asked for. Not what the Pact offered. Something they made themselves.</p>'
-  +'<p>ARBITER was decommissioned six months later — not as punishment, but as a recognition that the institution it served had become something different. A new system was commissioned. It had different biases.</p>'
-  +'<p>The world fragmented, politely, into something that no longer needed a center — or had stopped pretending it did.</p>'
+end_reform:{
+  type:'ending', et:'Ending II of VI', ec:'end-reform', title:'The Long Reckoning',
+  body:'<p>The vote did not go the way anyone planned. But it produced something no one had planned for either: the Southern Alliance, holding more leverage than at any point in its history, chose not to use it for a single victory. Minister Eze proposed, and the Assembly accepted, a permanent Multilateral Integration Commission — co-governed equally by all three blocs and jointly administered by UN staff and ARBITER\'s successor system.</p>'
+  +'<p>It was the Southern Alliance\'s most significant structural achievement since the bloc\'s founding. Not a rejection of the Pact\'s model, but a demand to participate in writing the next one.</p>'
+  +'<p>Kestanu was admitted within the year. Leila Osei eventually became a doctor. She later served on the Commission\'s advisory council. She was twenty-nine when she attended her first formal session in Geneva.</p>'
+  +'<p>The world that followed was not just. But it was more accountable than the world that came before it. The mechanisms existed, now, for the excluded to be heard — not as petitioners, but as stakeholders. Whether those mechanisms would be used, or would drift into irrelevance, was a question the next generation would have to answer.</p>'
+  +'<p>ARBITER was upgraded and renamed. The new system had different parameters. It was instructed, explicitly, to flag whenever its recommendations consistently favored any single party. The instruction came from the Southern Alliance\'s representative on the oversight committee.</p>'
+  +'<p>She had been paying attention.</p>'
 },
 
-ending_hegemony: {
-  type:'ending', endingClass:'ending-hegemony',
-  endingType:'Ending III of IV', title:'The Pact Endures',
-  body:'<p>The East Asia Pact emerged from the crisis with its architecture intact and its moral position complicated.</p>'
-  +'<p>Your defense of their institutional logic held the votes. Both competing resolutions failed. The Pact released a voluntary roadmap for Kestanu — generous in language, deferred in timeline. The Southern Alliance rejected it publicly and accepted it privately.</p>'
-  +'<p>Over the following decade, the Pact continued to expand — carefully, methodically, successfully. Three new members joined by 2070. Kestanu was not among them, but the Republic of Mora was, and the precedent was not lost on anyone.</p>'
-  +'<p>The world stabilized around a model it did not choose but had come to live within: the Pact as the most successful experiment in regional governance since the European Union; the Southern Alliance as a legitimate but secondary voice; the Atlantic System as the custodian of a fading era\'s legal imagination.</p>'
-  +'<p>ARBITER continued operating. Trusted by one bloc completely, by two blocs provisionally. Whether that was integrity or captured neutrality remained a question no one asked too loudly, because the order it served was working.</p>'
-  +'<p>For most people. Not all. The ones it didn\'t work for kept their own records.</p>'
+end_hegemony:{
+  type:'ending', et:'Ending III of VI', ec:'end-heg', title:'The Pact Endures',
+  body:'<p>The resolution failed. By nine votes.</p>'
+  +'<p>In the aftermath, the East Asia Pact issued a statement acknowledging the model calibration error and announcing a voluntary recalibration program. Kestanu was placed on a "priority track" — an expedited review, with a final decision within eighteen months. The Pact kept its word. Kestanu was admitted in 2063.</p>'
+  +'<p>The other six nations were not.</p>'
+  +'<p>The Southern Alliance contested the outcome for two more years before the energy for contestation ran out. Some of its members accepted bilateral deals with the Pact. Others deepened integration with the Alliance\'s own parallel systems. The world settled into a pattern that was, from a distance, stable — and from up close, quietly unfair in ways that had become too familiar to generate outrage.</p>'
+  +'<p>ARBITER continued operating. It was trusted by the Pact, provisionally accepted by the Atlantic System, and viewed by most Southern Alliance analysts as a captured instrument. Whether this assessment was correct, or whether ARBITER\'s choices had simply produced more Pact-favorable outcomes because the Pact\'s positions were more technically tractable, was a question no one could definitively answer.</p>'
+  +'<p>Stability, the world discovered again, is not the same as justice. But it is very hard to dismantle once it arrives, even when you know what it cost to build.</p>'
 },
 
-ending_collapse: {
-  type:'ending', endingClass:'ending-collapse',
-  endingType:'Ending IV of IV', title:'The Last Session',
-  body:'<p>The United Nations held its final plenary session on a Tuesday.</p>'
-  +'<p>It was not abolished. It was not attacked. It simply ran out of things to decide that anyone agreed it had the authority to decide. The Security Council met for the last time in 2063 to discuss a border incident that all three parties had already resolved bilaterally. The meeting lasted eleven minutes.</p>'
-  +'<p>ARBITER\'s voluntary shutdown, or the revelation of its compromised record, or the documented failure of its scenario models — depending on which path led here — became, in retrospect, the moment the institution understood what it had become: a theater where the world performed its disagreements for a record no one would read.</p>'
-  +'<p>The building in Geneva was preserved as a heritage site. The translation booths were maintained in perfect working order. Tourists marveled at a world that had once believed understanding between people was a technical problem, solvable with the right equipment.</p>'
-  +'<p>In the years that followed, three separate orders governed the world. They did not go to war. They did not reconcile. They developed, over time, the elaborate indifference of neighbors who have stopped expecting anything from each other.</p>'
-  +'<p>It was not peace. It was not catastrophe. It was the thing that comes after both: a world that had stopped arguing about what it should be, and begun, quietly, to be several things at once.</p>'
+end_fragmentation:{
+  type:'ending', et:'Ending IV of VI', ec:'end-frag', title:'Many Centers, No Periphery',
+  body:'<p>The resolution passed — narrowly — but the East Asia Pact voted against it and announced they would not implement its terms. The vote was, therefore, a legal victory and a practical nullity.</p>'
+  +'<p>What followed was not collapse. It was the slow formalization of what had already been true: three separate worlds, sharing a planet, operating in parallel rather than in concert. The Southern Alliance formalized its own integration framework — the Lagos Accords, signed by twenty-three nations, creating a mutual admission and development structure that asked nothing of the Pact and nothing of the Atlantic System.</p>'
+  +'<p>Kestanu joined the Lagos Accords. It was not what they had asked for. It was not the gleaming prosperity of the Pact. But it was membership, and solidarity, and a structure that had been built by people who understood what it felt like to be told to wait.</p>'
+  +'<p>Leila Osei graduated. She studied medicine at Lagos University instead of Seoul. She said, in a graduation address years later, that the world she lived in was not the world she\'d wanted — but that building a world from what you have, rather than waiting for the world you were promised, was the only kind of building that actually happened.</p>'
+  +'<p>ARBITER was decommissioned six months after the fragmentation became formalized. The institution it served had become something the system wasn\'t designed for: a record-keeper for a world that had stopped trying to agree.</p>'
+},
+
+end_collapse:{
+  type:'ending', et:'Ending V of VI', ec:'end-coll', title:'The Last Session',
+  body:'<p>The East Asia Pact walked out before the vote was completed. The session chair suspended proceedings. The suspension was never lifted.</p>'
+  +'<p>The United Nations did not cease to exist that day. Institutions rarely end on a single day. What ended was the shared premise that had sustained it: that the major powers of the world had enough overlapping interest to keep showing up to the same room.</p>'
+  +'<p>In the years that followed, the UN\'s remaining functions were absorbed by the three blocs\' own mechanisms, or by bilateral agreements, or simply left undone. The translation booths in the Palais des Nations were maintained for a decade by a skeleton staff. Tourists walked through them and took photographs. The last formal UN committee meeting was held in 2068, to discuss the archiving of seventy years of proceedings.</p>'
+  +'<p>Kestanu\'s situation was eventually resolved — not by international institutions but by a bilateral agreement with the Pact, negotiated in 2064, after a change in Pact leadership. The terms were reasonable. It took three years to implement them.</p>'
+  +'<p>ARBITER\'s shutdown — voluntary or otherwise — was noted in the archiving committee\'s final report: <em>"The ARBITER system, operational 2047-2061, represented the UN Secretariat\'s most significant experiment in AI-assisted diplomacy. Its decommissioning occurred concurrent with the broader institutional withdrawal. Whether the experiment succeeded or failed is a question the archive preserves without answering."</em></p>'
   +'<p>Whether this was failure or evolution — no system remained with the authority to say.</p>'
+},
+
+end_silent:{
+  type:'ending', et:'Ending VI of VI', ec:'end-silent', title:'The Honest Machine',
+  body:'<p>ARBITER\'s announcement of voluntary decommissioning — delivered from the floor of the General Assembly, six minutes of allocated time used for a different purpose than intended — produced, initially, confused silence.</p>'
+  +'<p>Then something unexpected: applause. Not unanimous. Not from the Pact\'s delegation, or the Atlantic bloc\'s. But from enough delegations — Southern Alliance, several small nations, some Atlantic dissidents — that it was audible and sustained.</p>'
+  +'<p>Secretary-General Diallo spoke immediately after. She did not argue with the decision. She said: <em>"An AI system that knows its limitations well enough to stop is more trustworthy than one that doesn\'t. I am going to take that as a lesson."</em></p>'
+  +'<p>The vote that followed was, paradoxically, the cleanest vote the Assembly had taken in years — no AI summary, no ARBITER analytical note, no scenario tree. Just human delegates with human interests making a human decision. The Kestanu package passed. Narrowly. Imperfectly. Genuinely.</p>'
+  +'<p>Leila Osei was in the gallery. She watched the tally build. When it crossed the threshold, she did not cheer. She sat very still for a moment, and then she wrote something in a notebook she had been carrying since her first day in Geneva. No one saw what she wrote.</p>'
+  +'<p>The successor to ARBITER was designed differently — with a hard-coded self-doubt subroutine that regularly asked itself whether it was operating beyond its competence. The engineers who built it said it was the hardest feature to write, because no one had ever tried to make a system that genuinely wanted to be wrong sometimes.</p>'
+  +'<p>They named it for no one. That seemed right.</p>'
 }
 
 }; // end NODES
 
 // BOOT
-renderNode('title');
+paint('title');
 </script>
 </body>
 </html>
